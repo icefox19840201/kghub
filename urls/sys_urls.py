@@ -1,0 +1,18 @@
+from fastapi import APIRouter
+from apps.default import Default
+sys_router=APIRouter()
+pageinfo=Default()
+sys_router.add_api_route(path='/index',methods=['get'],endpoint=pageinfo.default_page,description='首页')
+sys_router.add_api_route(path='/menu',methods=['get'],endpoint=pageinfo.left_page,description='菜单')
+sys_router.add_api_route(path='/pagecontent',methods=['get'],endpoint=pageinfo.right_page,description='内容查询')
+sys_router.add_api_route(path='/doc_qa',methods=['get'],endpoint=pageinfo.doc_qa,description='文档问答')
+sys_router.add_api_route(path='/spider_data',methods=['get'],endpoint=pageinfo.spider_data,description='爬虫数据采集')
+sys_router.add_api_route(path='/nlsql',methods=['get'],endpoint=pageinfo.nlp_query,description='text-to-sql查询数据库中的信息')
+sys_router.add_api_route(path='/doc_management',methods=['get'],endpoint=pageinfo.doc_management,description='知识库管理')
+sys_router.add_api_route(path='/doc_import',methods=['get'],endpoint=pageinfo.doc_import,description='文档入库')
+sys_router.add_api_route(path='/audio_to_text',methods=['get'],endpoint=pageinfo.audio_to_text,description='音频转文本并入库')
+sys_router.add_api_route(path='/tag_manager',methods=['get'],endpoint=pageinfo.tag_management,description='标签管理')
+sys_router.add_api_route(path='/data_backup',methods=['get'],endpoint=pageinfo.data_backup,description='备份恢复')
+sys_router.add_api_route(path='/system_settings',methods=['get'],endpoint=pageinfo.system_settings,description='系统设置')
+sys_router.add_api_route(path='/right_settings',methods=['get'],endpoint=pageinfo.right_settings,description='权限管理')
+sys_router.add_api_route(path='/doc_upload',methods=['post'],endpoint=pageinfo.file_upload,description='文件上传')

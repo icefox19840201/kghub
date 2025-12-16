@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识库查询</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 30px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-item {
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-item:hover,
+        .filter-item.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .results {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .result-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .result-item:hover {
+            background: #f8f9fa;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .result-content {
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .result-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .result-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>知识库查询</h1>
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="请输入查询关键词..." id="searchInput">
+                <button class="search-btn" onclick="performSearch()">🔍 搜索</button>
+            </div>
+            <div class="filters">
+                <div class="filter-item active" onclick="filterByCategory('all')">全部</div>
+                <div class="filter-item" onclick="filterByCategory('tech')">技术文档</div>
+                <div class="filter-item" onclick="filterByCategory('business')">业务文档</div>
+                <div class="filter-item" onclick="filterByCategory('manual')">操作手册</div>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>正在搜索...</p>
+            </div>
+            
+            <div class="no-results" id="noResults">
+                <h3>欢迎使用知识库查询系统</h3>
+                <p>请在上方输入关键词开始搜索</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟搜索功能
+        function performSearch() {
+            const query = document.getElementById('searchInput').value;
+            if (!query.trim()) {
+                alert('请输入搜索关键词');
+                return;
+            }
+
+            showLoading();
+            
+            // 模拟API调用延迟
+            setTimeout(() => {
+                const results = generateMockResults(query);
+                displayResults(results);
+            }, 1000);
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('noResults').style.display = 'none';
+        }
+
+        function generateMockResults(query) {
+            const mockData = [
+                {
+                    title: "FastAPI框架使用指南",
+                    content: "FastAPI是一个现代、快速（高性能）的Web框架，基于标准的Python类型提示，支持Python3.6+版本。",
+                    category: "tech",
+                    tags: ["Python", "Web开发"],
+                    date: "2024-01-15"
+                },
+                {
+                    title: "知识图谱构建方法",
+                    content: "知识图谱是一种结构化的语义知识库，用于以符号形式描述物理世界中的概念及其相互关系。",
+                    category: "tech",
+                    tags: ["知识图谱", "AI"],
+                    date: "2024-01-10"
+                },
+                {
+                    title: "业务流程说明文档",
+                    content: "本文档详细说明了公司的主要业务流程，包括客户管理、订单处理、售后服务等各个环节。",
+                    category: "business",
+                    tags: ["业务", "流程"],
+                    date: "2024-01-08"
+                }
+            ];
+
+            return mockData.filter(item => 
+                item.title.includes(query) || item.content.includes(query)
+            );
+        }
+
+        function displayResults(results) {
+            document.getElementById('loading').style.display = 'none';
+            const resultsContainer = document.getElementById('results');
+            
+            if (results.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="no-results">
+                        <h3>未找到相关结果</h3>
+                        <p>请尝试其他关键词或检查拼写</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            results.forEach(result => {
+                html += `
+                    <div class="result-item" onclick="showDetail('${result.title}')">
+                        <div class="result-title">${result.title}</div>
+                        <div class="result-content">${result.content}</div>
+                        <div class="result-meta">
+                            <span class="result-tag">${result.category}</span>
+                            ${result.tags.map(tag => `<span class="result-tag">${tag}</span>`).join('')}
+                            <span>📅 ${result.date}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultsContainer.innerHTML = html;
+        }
+
+        function showDetail(title) {
+            alert(`查看详情: ${title}\n
+这里可以跳转到详细页面或显示详细信息。`);
+        }
+
+        function filterByCategory(category) {
+            // 更新筛选按钮状态
+            document.querySelectorAll('.filter-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // 这里可以添加筛选逻辑
+            console.log('筛选类别:', category);
+        }
+
+        // 回车键搜索
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+    </script>
+</body>
+</html>

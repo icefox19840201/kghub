@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>爬虫获取数据并入库</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 30px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-success {
+            background: #28a745;
+        }
+
+        .status-error {
+            background: #dc3545;
+        }
+
+        .status-warning {
+            background: #ffc107;
+        }
+
+        .status-info {
+            background: #17a2b8;
+        }
+
+        .log-container {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            color: #495057;
+        }
+
+        .log-timestamp {
+            color: #6c757d;
+            margin-right: 10px;
+        }
+
+        .data-preview {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .preview-item {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .preview-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .preview-content {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .preview-meta {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #999;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="section">
+            <h2>🕷️ 爬虫配置</h2>
+            <div class="form-group">
+                <label class="form-label">目标网站URL</label>
+                <input type="url" class="form-input" id="targetUrl" placeholder="https://example.com" value="https://example.com">
+            </div>
+            <div class="form-group">
+                <label class="form-label">选择数据类型</label>
+                <select class="form-input" id="dataType">
+                    <option value="articles">文章/新闻</option>
+                    <option value="products">商品信息</option>
+                    <option value="documents">文档资料</option>
+                    <option value="custom">自定义</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">爬取深度（页面层级）</label>
+                <input type="number" class="form-input" id="depth" value="2" min="1" max="5">
+            </div>
+            <div class="form-group">
+                <label class="form-label">CSS选择器（可选）</label>
+                <input type="text" class="form-input" id="cssSelector" placeholder="例如: .article-content, .product-info">
+            </div>
+            <div class="form-group">
+                <label class="form-label">自定义规则（JSON格式）</label>
+                <textarea class="form-textarea" id="customRules" placeholder='{"title": "h1", "content": ".content", "author": ".author"}'></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="startSpider()">🚀 开始爬取</button>
+            <button class="btn btn-secondary" onclick="stopSpider()">⏹️ 停止爬取</button>
+        </div>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">准备就绪...</div>
+        </div>
+
+        <div class="section" id="resultsSection" style="display: none;">
+            <h2>📊 爬取结果</h2>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="pagesCount">0</div>
+                    <div class="stat-label">已爬取页面</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="dataCount">0</div>
+                    <div class="stat-label">数据条数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="errorsCount">0</div>
+                    <div class="stat-label">错误数量</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="timeElapsed">0</div>
+                    <div class="stat-label">耗时(秒)</div>
+                </div>
+            </div>
+
+            <div class="data-preview" id="dataPreview">
+                <h3 style="margin-bottom: 15px; color: #333;">数据预览</h3>
+                <div id="previewContent">
+                    <p style="text-align: center; color: #999;">暂无数据</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="btn btn-primary" onclick="saveToDatabase()">💾 保存到数据库</button>
+                <button class="btn btn-secondary" onclick="exportData()">📤 导出数据</button>
+            </div>
+        </div>
+
+        <div class="log-container" id="logContainer">
+            <div style="margin-bottom: 10px; font-weight: bold; color: #333;">📋 运行日志</div>
+            <div id="logContent">
+                <div class="log-entry">
+                    <span class="log-timestamp">[系统]</span>
+                    <span>爬虫系统已就绪，等待开始爬取任务...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let spiderRunning = false;
+        let startTime = null;
+        let collectedData = [];
+        let progressInterval = null;
+
+        function addLog(message, type = 'info') {
+            const logContent = document.getElementById('logContent');
+            const timestamp = new Date().toLocaleTimeString();
+            const statusClass = `status-${type}`;
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <span class="log-timestamp">[${timestamp}]</span>
+                <span class="status-indicator ${statusClass}"></span>
+                <span>${message}</span>
+            `;
+            
+            logContent.appendChild(logEntry);
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+
+        function startSpider() {
+            if (spiderRunning) {
+                addLog('爬虫已在运行中...', 'warning');
+                return;
+            }
+
+            const url = document.getElementById('targetUrl').value;
+            const dataType = document.getElementById('dataType').value;
+            const depth = document.getElementById('depth').value;
+
+            if (!url) {
+                addLog('请输入目标网站URL', 'error');
+                return;
+            }
+
+            spiderRunning = true;
+            startTime = Date.now();
+            collectedData = [];
+
+            addLog(`开始爬取任务: ${url}`, 'success');
+            addLog(`数据类型: ${dataType}, 爬取深度: ${depth}`, 'info');
+
+            // 显示进度条
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'none';
+
+            // 模拟进度更新
+            let progress = 0;
+            progressInterval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90; // 保持90%直到完成
+                
+                updateProgress(progress);
+                
+                // 模拟发现数据
+                if (Math.random() < 0.3 && progress < 90) {
+                    const mockData = generateMockData(dataType);
+                    collectedData.push(mockData);
+                    updateStats();
+                    addLog(`发现新数据: ${mockData.title}`, 'success');
+                }
+            }, 1000);
+
+            // 模拟爬取完成
+            setTimeout(() => {
+                completeSpider();
+            }, 8000 + Math.random() * 5000);
+        }
+
+        function generateMockData(dataType) {
+            const mockData = {
+                articles: {
+                    title: `技术文章 ${collectedData.length + 1}`,
+                    content: '这是一篇关于最新技术发展趋势的文章，包含了丰富的技术细节和实践经验。',
+                    author: `作者${Math.floor(Math.random() * 10) + 1}`,
+                    date: new Date().toISOString().split('T')[0],
+                    category: '技术'
+                },
+                products: {
+                    title: `产品 ${collectedData.length + 1}`,
+                    price: `¥${(Math.random() * 1000 + 100).toFixed(2)}`,
+                    description: '高质量产品，具有优秀的性能和用户体验。',
+                    brand: `品牌${Math.floor(Math.random() * 5) + 1}`,
+                    category: '电子产品'
+                },
+                documents: {
+                    title: `文档 ${collectedData.length + 1}`,
+                    type: 'PDF',
+                    size: `${(Math.random() * 5 + 1).toFixed(1)}MB`,
+                    description: '重要的技术文档，包含详细的实现说明。',
+                    date: new Date().toISOString().split('T')[0]
+                }
+            };
+
+            return mockData[dataType] || mockData.articles;
+        }
+
+        function updateProgress(progress) {
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `爬取进度: ${Math.round(progress)}%`;
+        }
+
+        function updateStats() {
+            const elapsed = Math.round((Date.now() - startTime) / 1000);
+            document.getElementById('pagesCount').textContent = Math.floor(Math.random() * 50) + collectedData.length;
+            document.getElementById('dataCount').textContent = collectedData.length;
+            document.getElementById('errorsCount').textContent = Math.floor(Math.random() * 3);
+            document.getElementById('timeElapsed').textContent = elapsed;
+        }
+
+        function completeSpider() {
+            spiderRunning = false;
+            clearInterval(progressInterval);
+            
+            updateProgress(100);
+            addLog('爬取任务完成！', 'success');
+            
+            // 显示结果
+            document.getElementById('resultsSection').style.display = 'block';
+            displayDataPreview();
+            
+            setTimeout(() => {
+                document.getElementById('progressContainer').style.display = 'none';
+            }, 2000);
+        }
+
+        function stopSpider() {
+            if (!spiderRunning) {
+                addLog('没有正在运行的爬虫任务', 'warning');
+                return;
+            }
+
+            spiderRunning = false;
+            clearInterval(progressInterval);
+            
+            addLog('爬虫任务已停止', 'warning');
+            document.getElementById('progressContainer').style.display = 'none';
+        }
+
+        function displayDataPreview() {
+            const previewContent = document.getElementById('previewContent');
+            
+            if (collectedData.length === 0) {
+                previewContent.innerHTML = '<p style="text-align: center; color: #999;">暂无数据</p>';
+                return;
+            }
+
+            let html = '';
+            collectedData.slice(0, 5).forEach((item, index) => {
+                html += `
+                    <div class="preview-item">
+                        <div class="preview-title">${item.title}</div>
+                        <div class="preview-content">${item.content || item.description}</div>
+                        <div class="preview-meta">
+                            ${item.author ? `作者: ${item.author} | ` : ''}
+                            ${item.date ? `日期: ${item.date} | ` : ''}
+                            ${item.price ? `价格: ${item.price} | ` : ''}
+                            ${item.type ? `类型: ${item.type} | ` : ''}
+                            ${item.size ? `大小: ${item.size}` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (collectedData.length > 5) {
+                html += `<p style="text-align: center; color: #999; margin-top: 15px;">还有 ${collectedData.length - 5} 条数据...</p>`;
+            }
+
+            previewContent.innerHTML = html;
+        }
+
+        function saveToDatabase() {
+            if (collectedData.length === 0) {
+                addLog('没有数据可保存', 'warning');
+                return;
+            }
+
+            addLog('开始保存数据到数据库...', 'info');
+            
+            // 模拟数据库保存
+            setTimeout(() => {
+                addLog(`成功保存 ${collectedData.length} 条数据到数据库`, 'success');
+                alert(`数据保存成功！共保存了 ${collectedData.length} 条记录。`);
+            }, 2000);
+        }
+
+        function exportData() {
+            if (collectedData.length === 0) {
+                addLog('没有数据可导出', 'warning');
+                return;
+            }
+
+            addLog('开始导出数据...', 'info');
+            
+            // 模拟数据导出
+            const dataStr = JSON.stringify(collectedData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `spider_data_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            addLog('数据导出完成', 'success');
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

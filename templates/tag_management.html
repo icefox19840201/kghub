@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>标签分类管理 - 知识图谱系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .stats-panel {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .control-panel {
+            padding: 20px;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .control-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .control-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .filter-panel {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .tag-management {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .category-panel {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .category-tree {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .category-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .category-item:hover {
+            background: #e9ecef;
+            border-color: #007bff;
+        }
+
+        .category-item.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .category-icon {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        .category-name {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .category-count {
+            background: rgba(0,123,255,0.1);
+            color: #007bff;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .category-item.active .category-count {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .tag-panel {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .tag-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .tag-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tag-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .tag-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .tag-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .tag-name {
+            font-weight: 600;
+            color: #333;
+            flex: 1;
+        }
+
+        .tag-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .tag-btn {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tag-btn-edit {
+            background: #007bff;
+            color: white;
+        }
+
+        .tag-btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .tag-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .tag-description {
+            font-size: 13px;
+            color: #666;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        .tag-usage {
+            background: #f8f9fa;
+            border-radius: 4px;
+            padding: 8px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .usage-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 6px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .usage-fill {
+            background: linear-gradient(90deg, #007bff, #0056b3);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: #333;
+            transform: scale(1.2);
+        }
+
+        .batch-actions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px;
+            display: none;
+        }
+
+        .batch-actions.active {
+            display: block;
+        }
+
+        .batch-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .batch-title {
+            font-weight: 600;
+            color: #856404;
+        }
+
+        .batch-selected {
+            color: #007bff;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .empty-description {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .tag-management {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                min-width: auto;
+            }
+            
+            .tag-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏷️ 标签分类管理</h1>
+            <p>管理和组织您的文档标签与分类体系</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 统计面板 -->
+            <div class="stats-panel">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalTags">156</div>
+                        <div class="stat-label">总标签数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalCategories">24</div>
+                        <div class="stat-label">分类数量</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="mostUsedTag">知识图谱</div>
+                        <div class="stat-label">最常用标签</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="unusedTags">12</div>
+                        <div class="stat-label">未使用标签</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 控制面板 -->
+            <div class="control-panel">
+                <div class="control-header">
+                    <div class="control-title">标签管理控制台</div>
+                    <div class="control-actions">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" class="search-input" id="searchInput" placeholder="搜索标签名称、描述或关键词...">
+                        </div>
+                        <button class="btn btn-primary" onclick="showAddTagModal()">
+                            <span>➕</span>
+                            <span>新建标签</span>
+                        </button>
+                        <button class="btn btn-success" onclick="showAddCategoryModal()">
+                            <span>📁</span>
+                            <span>新建分类</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="filter-panel">
+                    <div class="filter-group">
+                        <label class="filter-label">分类筛选</label>
+                        <select class="filter-select" id="categoryFilter" onchange="filterTags()">
+                            <option value="">全部分类</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">使用状态</label>
+                        <select class="filter-select" id="usageFilter" onchange="filterTags()">
+                            <option value="">全部状态</option>
+                            <option value="used">已使用</option>
+                            <option value="unused">未使用</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">排序方式</label>
+                        <select class="filter-select" id="sortFilter" onchange="sortTags()">
+                            <option value="name">按名称</option>
+                            <option value="usage">按使用频率</option>
+                            <option value="created">按创建时间</option>
+                            <option value="updated">按更新时间</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 批量操作面板 -->
+            <div class="batch-actions" id="batchActions">
+                <div class="batch-header">
+                    <div class="batch-title">
+                        <span>批量操作</span>
+                        <span class="batch-selected" id="selectedCount">已选择 0 个标签</span>
+                    </div>
+                    <div class="control-actions">
+                        <button class="btn btn-warning" onclick="batchEdit()">✏️ 批量编辑</button>
+                        <button class="btn btn-danger" onclick="batchDelete()">🗑️ 批量删除</button>
+                        <button class="btn btn-secondary" onclick="clearSelection()">❌ 取消选择</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 标签管理区域 -->
+            <div class="tag-management">
+                <!-- 分类树 -->
+                <div class="category-panel">
+                    <div class="panel-title">📂 分类管理</div>
+                    <div class="category-tree" id="categoryTree">
+                        <!-- 分类树将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 标签网格 -->
+                <div class="tag-panel">
+                    <div class="panel-title">🏷️ 标签列表</div>
+                    <div class="tag-grid" id="tagGrid">
+                        <!-- 标签卡片将通过JavaScript动态生成 -->
+                    </div>
+                    <div class="empty-state" id="emptyState" style="display: none;">
+                        <div class="empty-icon">🏷️</div>
+                        <div class="empty-title">暂无标签</div>
+                        <div class="empty-description">
+                            当前分类下还没有标签，点击上方"新建标签"按钮创建您的第一个标签吧！
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加/编辑标签模态框 -->
+    <div class="modal" id="tagModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="tagModalTitle">新建标签</div>
+                <button class="modal-close" onclick="closeTagModal()">&times;</button>
+            </div>
+            <form id="tagForm" onsubmit="saveTag(event)">
+                <div class="form-group">
+                    <label class="form-label">标签名称 *</label>
+                    <input type="text" class="form-input" id="tagName" required placeholder="请输入标签名称">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">标签描述</label>
+                    <textarea class="form-textarea" id="tagDescription" placeholder="请输入标签描述（可选）"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">所属分类</label>
+                    <select class="form-select" id="tagCategory" required>
+                        <option value="">请选择分类</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">标签颜色</label>
+                    <div class="color-picker" id="colorPicker">
+                        <div class="color-option selected" style="background: #007bff" data-color="#007bff"></div>
+                        <div class="color-option" style="background: #28a745" data-color="#28a745"></div>
+                        <div class="color-option" style="background: #dc3545" data-color="#dc3545"></div>
+                        <div class="color-option" style="background: #ffc107" data-color="#ffc107"></div>
+                        <div class="color-option" style="background: #17a2b8" data-color="#17a2b8"></div>
+                        <div class="color-option" style="background: #6f42c1" data-color="#6f42c1"></div>
+                        <div class="color-option" style="background: #e83e8c" data-color="#e83e8c"></div>
+                        <div class="color-option" style="background: #fd7e14" data-color="#fd7e14"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">关键词（用逗号分隔）</label>
+                    <input type="text" class="form-input" id="tagKeywords" placeholder="例如: AI,人工智能,机器学习">
+                </div>
+                <div class="btn-group" style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeTagModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">保存标签</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 添加/编辑分类模态框 -->
+    <div class="modal" id="categoryModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="categoryModalTitle">新建分类</div>
+                <button class="modal-close" onclick="closeCategoryModal()">&times;</button>
+            </div>
+            <form id="categoryForm" onsubmit="saveCategory(event)">
+                <div class="form-group">
+                    <label class="form-label">分类名称 *</label>
+                    <input type="text" class="form-input" id="categoryName" required placeholder="请输入分类名称">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">分类描述</label>
+                    <textarea class="form-textarea" id="categoryDescription" placeholder="请输入分类描述（可选）"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">上级分类</label>
+                    <select class="form-select" id="parentCategory">
+                        <option value="">顶级分类</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">分类图标</label>
+                    <input type="text" class="form-input" id="categoryIcon" placeholder="例如: 📁, 🏷️, 📚">
+                </div>
+                <div class="btn-group" style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeCategoryModal()">取消</button>
+                    <button type="submit" class="btn btn-success">保存分类</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let tags = [];
+        let categories = [];
+        let selectedTags = new Set();
+        let currentEditingTag = null;
+        let currentEditingCategory = null;
+        let currentCategory = null;
+
+        // 初始化数据
+        function initializeData() {
+            // 模拟分类数据
+            categories = [
+                { id: 1, name: '技术领域', icon: '💻', description: '技术相关标签', parentId: null, level: 0 },
+                { id: 2, name: '人工智能', icon: '🤖', description: 'AI相关标签', parentId: 1, level: 1 },
+                { id: 3, name: '机器学习', icon: '🧠', description: 'ML相关标签', parentId: 2, level: 2 },
+                { id: 4, name: '深度学习', icon: '🔬', description: 'DL相关标签', parentId: 2, level: 2 },
+                { id: 5, name: '业务领域', icon: '💼', description: '业务相关标签', parentId: null, level: 0 },
+                { id: 6, name: '金融行业', icon: '🏦', description: '金融相关标签', parentId: 5, level: 1 },
+                { id: 7, name: '医疗行业', icon: '🏥', description: '医疗相关标签', parentId: 5, level: 1 },
+                { id: 8, name: '教育领域', icon: '🎓', description: '教育相关标签', parentId: null, level: 0 }
+            ];
+
+            // 模拟标签数据
+            tags = [
+                { id: 1, name: '知识图谱', description: '知识图谱相关文档', categoryId: 3, color: '#007bff', keywords: ['KG', '知识图谱', '图谱'], usage: 45, createdAt: '2024-01-01', updatedAt: '2024-01-15' },
+                { id: 2, name: '自然语言处理', description: 'NLP相关技术和应用', categoryId: 2, color: '#28a745', keywords: ['NLP', '自然语言', '文本处理'], usage: 38, createdAt: '2024-01-02', updatedAt: '2024-01-14' },
+                { id: 3, name: '深度学习', description: '深度学习算法和模型', categoryId: 4, color: '#dc3545', keywords: ['DL', '深度学习', '神经网络'], usage: 32, createdAt: '2024-01-03', updatedAt: '2024-01-13' },
+                { id: 4, name: '金融风险', description: '金融风险评估和管理', categoryId: 6, color: '#ffc107', keywords: ['风险', '金融', '评估'], usage: 28, createdAt: '2024-01-04', updatedAt: '2024-01-12' },
+                { id: 5, name: '医疗诊断', description: '医疗诊断辅助系统', categoryId: 7, color: '#17a2b8', keywords: ['医疗', '诊断', '健康'], usage: 25, createdAt: '2024-01-05', updatedAt: '2024-01-11' },
+                { id: 6, name: '在线教育', description: '在线教育平台和技术', categoryId: 8, color: '#6f42c1', keywords: ['教育', '在线', '学习'], usage: 22, createdAt: '2024-01-06', updatedAt: '2024-01-10' },
+                { id: 7, name: '数据挖掘', description: '数据挖掘和分析技术', categoryId: 3, color: '#e83e8c', keywords: ['挖掘', '数据', '分析'], usage: 18, createdAt: '2024-01-07', updatedAt: '2024-01-09' },
+                { id: 8, name: '计算机视觉', description: '计算机视觉和图像处理', categoryId: 4, color: '#fd7e14', keywords: ['视觉', '图像', 'CV'], usage: 15, createdAt: '2024-01-08', updatedAt: '2024-01-08' }
+            ];
+
+            renderCategoryTree();
+            renderTags();
+            updateStats();
+            populateSelects();
+            setupEventListeners();
+        }
+
+        // 渲染分类树
+        function renderCategoryTree() {
+            const treeContainer = document.getElementById('categoryTree');
+            const rootCategories = categories.filter(cat => cat.parentId === null);
+            
+            treeContainer.innerHTML = `
+                <div class="category-item ${!currentCategory ? 'active' : ''}" onclick="selectCategory(null)">
+                    <span class="category-icon">🏷️</span>
+                    <span class="category-name">全部标签</span>
+                    <span class="category-count">${tags.length}</span>
+                </div>
+                ${rootCategories.map(category => renderCategoryNode(category)).join('')}
+            `;
+        }
+
+        function renderCategoryNode(category) {
+            const children = categories.filter(cat => cat.parentId === category.id);
+            const categoryTags = tags.filter(tag => tag.categoryId === category.id);
+            const indent = 'margin-left: ' + (category.level * 20) + 'px;';
+            
+            return `
+                <div class="category-item ${currentCategory === category.id ? 'active' : ''}" 
+                     onclick="selectCategory(${category.id})" style="${indent}">
+                    <span class="category-icon">${category.icon}</span>
+                    <span class="category-name">${category.name}</span>
+                    <span class="category-count">${categoryTags.length}</span>
+                </div>
+                ${children.map(child => renderCategoryNode(child)).join('')}
+            `;
+        }
+
+        // 选择分类
+        function selectCategory(categoryId) {
+            currentCategory = categoryId;
+            renderCategoryTree();
+            renderTags();
+        }
+
+        // 渲染标签
+        function renderTags() {
+            const tagGrid = document.getElementById('tagGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            let filteredTags = tags;
+            
+            // 按分类筛选
+            if (currentCategory) {
+                filteredTags = filteredTags.filter(tag => tag.categoryId === currentCategory);
+            }
+            
+            // 按搜索词筛选
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm) {
+                filteredTags = filteredTags.filter(tag => 
+                    tag.name.toLowerCase().includes(searchTerm) ||
+                    tag.description.toLowerCase().includes(searchTerm) ||
+                    tag.keywords.some(keyword => keyword.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            // 按使用状态筛选
+            const usageFilter = document.getElementById('usageFilter').value;
+            if (usageFilter === 'used') {
+                filteredTags = filteredTags.filter(tag => tag.usage > 0);
+            } else if (usageFilter === 'unused') {
+                filteredTags = filteredTags.filter(tag => tag.usage === 0);
+            }
+            
+            if (filteredTags.length === 0) {
+                tagGrid.style.display = 'none';
+                emptyState.style.display = 'block';
+            } else {
+                tagGrid.style.display = 'grid';
+                emptyState.style.display = 'none';
+                
+                tagGrid.innerHTML = filteredTags.map(tag => `
+                    <div class="tag-card" data-tag-id="${tag.id}">
+                        <div class="tag-header">
+                            <div class="tag-color" style="background: ${tag.color}"></div>
+                            <div class="tag-name">${tag.name}</div>
+                            <input type="checkbox" class="tag-checkbox" style="margin-left: auto;" 
+                                   onchange="toggleTagSelection(${tag.id})" 
+                                   ${selectedTags.has(tag.id) ? 'checked' : ''}>
+                        </div>
+                        <div class="tag-description">${tag.description}</div>
+                        <div class="tag-stats">
+                            <span>使用次数: <strong>${tag.usage}</strong></span>
+                            <span>关键词: <strong>${tag.keywords.length}</strong></span>
+                        </div>
+                        <div class="tag-usage">
+                            <div>使用频率</div>
+                            <div class="usage-bar">
+                                <div class="usage-fill" style="width: ${Math.min(tag.usage * 2, 100)}%"></div>
+                            </div>
+                        </div>
+                        <div class="tag-actions">
+                            <button class="tag-btn tag-btn-edit" onclick="editTag(${tag.id})">✏️ 编辑</button>
+                            <button class="tag-btn tag-btn-delete" onclick="deleteTag(${tag.id})">🗑️ 删除</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 搜索功能
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', renderTags);
+            document.getElementById('categoryFilter').addEventListener('change', filterTags);
+            document.getElementById('usageFilter').addEventListener('change', filterTags);
+            document.getElementById('sortFilter').addEventListener('change', sortTags);
+            
+            // 颜色选择器
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+        }
+
+        // 筛选标签
+        function filterTags() {
+            renderTags();
+        }
+
+        // 排序标签
+        function sortTags() {
+            const sortBy = document.getElementById('sortFilter').value;
+            tags.sort((a, b) => {
+                switch (sortBy) {
+                    case 'name':
+                        return a.name.localeCompare(b.name);
+                    case 'usage':
+                        return b.usage - a.usage;
+                    case 'created':
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    case 'updated':
+                        return new Date(b.updatedAt) - new Date(a.updatedAt);
+                    default:
+                        return 0;
+                }
+            });
+            renderTags();
+        }
+
+        // 切换标签选择
+        function toggleTagSelection(tagId) {
+            if (selectedTags.has(tagId)) {
+                selectedTags.delete(tagId);
+            } else {
+                selectedTags.add(tagId);
+            }
+            updateBatchActions();
+        }
+
+        // 更新批量操作面板
+        function updateBatchActions() {
+            const batchActions = document.getElementById('batchActions');
+            const selectedCount = document.getElementById('selectedCount');
+            
+            if (selectedTags.size > 0) {
+                batchActions.classList.add('active');
+                selectedCount.textContent = `已选择 ${selectedTags.size} 个标签`;
+            } else {
+                batchActions.classList.remove('active');
+            }
+        }
+
+        // 清空选择
+        function clearSelection() {
+            selectedTags.clear();
+            document.querySelectorAll('.tag-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateBatchActions();
+        }
+
+        // 批量编辑
+        function batchEdit() {
+            if (selectedTags.size === 0) {
+                alert('请先选择要编辑的标签');
+                return;
+            }
+            alert(`批量编辑 ${selectedTags.size} 个标签的功能开发中...`);
+        }
+
+        // 批量删除
+        function batchDelete() {
+            if (selectedTags.size === 0) {
+                alert('请先选择要删除的标签');
+                return;
+            }
+            
+            if (confirm(`确定要删除选中的 ${selectedTags.size} 个标签吗？`)) {
+                tags = tags.filter(tag => !selectedTags.has(tag.id));
+                selectedTags.clear();
+                renderTags();
+                renderCategoryTree();
+                updateStats();
+                updateBatchActions();
+                alert('批量删除成功！');
+            }
+        }
+
+        // 模态框功能
+        function showAddTagModal() {
+            currentEditingTag = null;
+            document.getElementById('tagModalTitle').textContent = '新建标签';
+            document.getElementById('tagForm').reset();
+            document.getElementById('tagModal').classList.add('active');
+        }
+
+        function showAddCategoryModal() {
+            currentEditingCategory = null;
+            document.getElementById('categoryModalTitle').textContent = '新建分类';
+            document.getElementById('categoryForm').reset();
+            document.getElementById('categoryModal').classList.add('active');
+        }
+
+        function closeTagModal() {
+            document.getElementById('tagModal').classList.remove('active');
+        }
+
+        function closeCategoryModal() {
+            document.getElementById('categoryModal').classList.remove('active');
+        }
+
+        // 编辑标签
+        function editTag(tagId) {
+            const tag = tags.find(t => t.id === tagId);
+            if (tag) {
+                currentEditingTag = tag;
+                document.getElementById('tagModalTitle').textContent = '编辑标签';
+                document.getElementById('tagName').value = tag.name;
+                document.getElementById('tagDescription').value = tag.description;
+                document.getElementById('tagCategory').value = tag.categoryId;
+                document.getElementById('tagKeywords').value = tag.keywords.join(', ');
+                
+                // 设置颜色
+                document.querySelectorAll('.color-option').forEach(option => {
+                    option.classList.remove('selected');
+                    if (option.dataset.color === tag.color) {
+                        option.classList.add('selected');
+                    }
+                });
+                
+                document.getElementById('tagModal').classList.add('active');
+            }
+        }
+
+        // 删除标签
+        function deleteTag(tagId) {
+            if (confirm('确定要删除这个标签吗？')) {
+                tags = tags.filter(tag => tag.id !== tagId);
+                selectedTags.delete(tagId);
+                renderTags();
+                renderCategoryTree();
+                updateStats();
+                updateBatchActions();
+                alert('标签删除成功！');
+            }
+        }
+
+        // 保存标签
+        function saveTag(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('tagName').value;
+            const description = document.getElementById('tagDescription').value;
+            const categoryId = parseInt(document.getElementById('tagCategory').value);
+            const keywords = document.getElementById('tagKeywords').value.split(',').map(k => k.trim()).filter(k => k);
+            const color = document.querySelector('.color-option.selected').dataset.color;
+            
+            if (currentEditingTag) {
+                // 编辑现有标签
+                currentEditingTag.name = name;
+                currentEditingTag.description = description;
+                currentEditingTag.categoryId = categoryId;
+                currentEditingTag.keywords = keywords;
+                currentEditingTag.color = color;
+                currentEditingTag.updatedAt = new Date().toISOString().slice(0, 10);
+            } else {
+                // 创建新标签
+                const newTag = {
+                    id: Date.now(),
+                    name: name,
+                    description: description,
+                    categoryId: categoryId,
+                    color: color,
+                    keywords: keywords,
+                    usage: 0,
+                    createdAt: new Date().toISOString().slice(0, 10),
+                    updatedAt: new Date().toISOString().slice(0, 10)
+                };
+                tags.push(newTag);
+            }
+            
+            renderTags();
+            renderCategoryTree();
+            updateStats();
+            closeTagModal();
+            alert(currentEditingTag ? '标签更新成功！' : '标签创建成功！');
+        }
+
+        // 保存分类
+        function saveCategory(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('categoryName').value;
+            const description = document.getElementById('categoryDescription').value;
+            const parentId = document.getElementById('parentCategory').value ? parseInt(document.getElementById('parentCategory').value) : null;
+            const icon = document.getElementById('categoryIcon').value || '📁';
+            
+            if (currentEditingCategory) {
+                // 编辑现有分类
+                currentEditingCategory.name = name;
+                currentEditingCategory.description = description;
+                currentEditingCategory.parentId = parentId;
+                currentEditingCategory.icon = icon;
+            } else {
+                // 创建新分类
+                const level = parentId ? categories.find(cat => cat.id === parentId).level + 1 : 0;
+                const newCategory = {
+                    id: Date.now(),
+                    name: name,
+                    icon: icon,
+                    description: description,
+                    parentId: parentId,
+                    level: level
+                };
+                categories.push(newCategory);
+            }
+            
+            renderCategoryTree();
+            populateSelects();
+            closeCategoryModal();
+            alert(currentEditingCategory ? '分类更新成功！' : '分类创建成功！');
+        }
+
+        // 填充下拉选择框
+        function populateSelects() {
+            const categorySelect = document.getElementById('tagCategory');
+            const categoryFilter = document.getElementById('categoryFilter');
+            const parentCategorySelect = document.getElementById('parentCategory');
+            
+            const options = categories.map(cat => {
+                const indent = '&nbsp;&nbsp;'.repeat(cat.level);
+                return `<option value="${cat.id}">${indent}${cat.icon} ${cat.name}</option>`;
+            }).join('');
+            
+            categorySelect.innerHTML = '<option value="">请选择分类</option>' + options;
+            categoryFilter.innerHTML = '<option value="">全部分类</option>' + options;
+            parentCategorySelect.innerHTML = '<option value="">顶级分类</option>' + options;
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            document.getElementById('totalTags').textContent = tags.length;
+            document.getElementById('totalCategories').textContent = categories.length;
+            
+            const mostUsedTag = tags.reduce((max, tag) => tag.usage > max.usage ? tag : max, tags[0]);
+            document.getElementById('mostUsedTag').textContent = mostUsedTag ? mostUsedTag.name : 'N/A';
+            
+            const unusedTags = tags.filter(tag => tag.usage === 0).length;
+            document.getElementById('unusedTags').textContent = unusedTags;
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initializeData);
+    </script>
+</body>
+</html>

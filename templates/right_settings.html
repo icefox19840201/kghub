@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>权限管控管理 - 知识图谱系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .stats-panel {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .control-panel {
+            padding: 20px;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .control-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .control-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .permission-management {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .role-panel {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .permission-panel {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .role-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .role-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            margin: 5px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            background: white;
+        }
+
+        .role-item:hover {
+            background: #e9ecef;
+            border-color: #007bff;
+        }
+
+        .role-item.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .role-info {
+            flex: 1;
+        }
+
+        .role-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .role-description {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .role-count {
+            background: rgba(0,123,255,0.1);
+            color: #007bff;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .role-item.active .role-count {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .permission-tree {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .permission-group {
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .permission-header {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .permission-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            background: white;
+        }
+
+        .permission-item:last-child {
+            border-bottom: none;
+        }
+
+        .permission-info {
+            flex: 1;
+        }
+
+        .permission-name {
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .permission-description {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .permission-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .permission-toggle {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: #ccc;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .permission-toggle.active {
+            background: #28a745;
+        }
+
+        .permission-toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .permission-toggle.active::after {
+            transform: translateX(26px);
+        }
+
+        .permission-level {
+            display: flex;
+            gap: 5px;
+        }
+
+        .level-btn {
+            padding: 4px 8px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .level-btn:hover {
+            background: #f8f9fa;
+        }
+
+        .level-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .user-management {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .user-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .user-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .user-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .user-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .user-email {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .user-role {
+            background: #e9ecef;
+            color: #495057;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .audit-log {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .log-table th,
+        .log-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .log-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .log-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .log-status {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .log-status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .log-status.failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .log-status.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .permission-matrix {
+            display: grid;
+            grid-template-columns: 200px repeat(auto-fit, minmax(80px, 1fr));
+            gap: 1px;
+            background: #e9ecef;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .matrix-header {
+            background: #f8f9fa;
+            padding: 10px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .matrix-cell {
+            background: white;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .matrix-cell.resource {
+            background: #f8f9fa;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .checkbox-custom {
+            width: 18px;
+            height: 18px;
+            accent-color: #007bff;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .permission-management {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                min-width: auto;
+            }
+            
+            .user-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .permission-matrix {
+                grid-template-columns: 150px repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 权限管控管理</h1>
+            <p>管理系统用户权限、角色分配和访问控制</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 统计面板 -->
+            <div class="stats-panel">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalUsers">128</div>
+                        <div class="stat-label">总用户数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalRoles">8</div>
+                        <div class="stat-label">角色数量</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="activePermissions">156</div>
+                        <div class="stat-label">活跃权限</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="securityEvents">23</div>
+                        <div class="stat-label">安全事件</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 控制面板 -->
+            <div class="control-panel">
+                <div class="control-header">
+                    <div class="control-title">权限管理控制台</div>
+                    <div class="control-actions">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" class="search-input" id="searchInput" placeholder="搜索用户、角色或权限...">
+                        </div>
+                        <button class="btn btn-primary" onclick="showAddRoleModal()">
+                            <span>➕</span>
+                            <span>新建角色</span>
+                        </button>
+                        <button class="btn btn-success" onclick="showAddUserModal()">
+                            <span>👤</span>
+                            <span>添加用户</span>
+                        </button>
+                        <button class="btn btn-warning" onclick="showPermissionMatrix()">
+                            <span>🔧</span>
+                            <span>权限矩阵</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 权限管理区域 -->
+            <div class="permission-management">
+                <!-- 角色列表 -->
+                <div class="role-panel">
+                    <div class="panel-title">👥 角色管理</div>
+                    <div class="role-list" id="roleList">
+                        <!-- 角色列表将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 权限配置 -->
+                <div class="permission-panel">
+                    <div class="panel-title">🔑 权限配置</div>
+                    <div class="permission-tree" id="permissionTree">
+                        <!-- 权限树将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 用户管理 -->
+            <div class="user-management">
+                <div class="panel-title">👨‍💼 用户管理</div>
+                <div class="user-grid" id="userGrid">
+                    <!-- 用户卡片将通过JavaScript动态生成 -->
+                </div>
+            </div>
+
+            <!-- 审计日志 -->
+            <div class="audit-log">
+                <div class="panel-title">📋 审计日志</div>
+                <div style="overflow-x: auto;">
+                    <table class="log-table" id="auditLogTable">
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>用户</th>
+                                <th>操作</th>
+                                <th>资源</th>
+                                <th>状态</th>
+                                <th>详情</th>
+                            </tr>
+                        </thead>
+                        <tbody id="auditLogBody">
+                            <!-- 日志数据将通过JavaScript动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加/编辑角色模态框 -->
+    <div class="modal" id="roleModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="roleModalTitle">新建角色</div>
+                <button class="modal-close" onclick="closeRoleModal()">&times;</button>
+            </div>
+            <form id="roleForm" onsubmit="saveRole(event)">
+                <div class="form-group">
+                    <label class="form-label">角色名称 *</label>
+                    <input type="text" class="form-input" id="roleName" required placeholder="请输入角色名称">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">角色描述</label>
+                    <textarea class="form-textarea" id="roleDescription" placeholder="请输入角色描述（可选）"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">角色级别</label>
+                    <select class="form-select" id="roleLevel">
+                        <option value="1">一级（系统管理员）</option>
+                        <option value="2">二级（部门管理员）</option>
+                        <option value="3">三级（普通用户）</option>
+                        <option value="4">四级（访客用户）</option>
+                    </select>
+                </div>
+                <div class="btn-group" style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeRoleModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">保存角色</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 权限矩阵模态框 -->
+    <div class="modal" id="permissionMatrixModal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <div class="modal-title">权限矩阵配置</div>
+                <button class="modal-close" onclick="closePermissionMatrix()">&times;</button>
+            </div>
+            <div id="permissionMatrixContent">
+                <!-- 权限矩阵将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let roles = [];
+        let permissions = [];
+        let users = [];
+        let auditLogs = [];
+        let currentRole = null;
+        let currentUser = null;
+
+        // 初始化数据
+        function initializeData() {
+            // 模拟角色数据
+            roles = [
+                {
+                    id: 1,
+                    name: '系统管理员',
+                    description: '拥有系统所有权限的超级管理员',
+                    level: 1,
+                    userCount: 3,
+                    permissions: ['all'],
+                    isSystem: true
+                },
+                {
+                    id: 2,
+                    name: '知识库管理员',
+                    description: '管理知识库内容和文档',
+                    level: 2,
+                    userCount: 8,
+                    permissions: ['doc.read', 'doc.write', 'doc.delete', 'tag.manage', 'category.manage'],
+                    isSystem: false
+                },
+                {
+                    id: 3,
+                    name: '数据分析师',
+                    description: '负责数据分析和报表生成',
+                    level: 2,
+                    userCount: 12,
+                    permissions: ['data.read', 'data.export', 'report.generate', 'query.execute'],
+                    isSystem: false
+                },
+                {
+                    id: 4,
+                    name: '普通用户',
+                    description: '基本的查询和浏览权限',
+                    level: 3,
+                    userCount: 85,
+                    permissions: ['doc.read', 'query.execute', 'search.use'],
+                    isSystem: false
+                },
+                {
+                    id: 5,
+                    name: '访客用户',
+                    description: '受限的访问权限',
+                    level: 4,
+                    userCount: 20,
+                    permissions: ['doc.read'],
+                    isSystem: false
+                }
+            ];
+
+            // 模拟权限数据
+            permissions = [
+                {
+                    id: 'doc',
+                    name: '文档管理',
+                    description: '文档相关操作权限',
+                    children: [
+                        { id: 'doc.read', name: '读取文档', description: '查看和搜索文档' },
+                        { id: 'doc.write', name: '编辑文档', description: '创建和修改文档' },
+                        { id: 'doc.delete', name: '删除文档', description: '删除文档内容' },
+                        { id: 'doc.import', name: '导入文档', description: '批量导入文档' },
+                        { id: 'doc.export', name: '导出文档', description: '导出文档内容' }
+                    ]
+                },
+                {
+                    id: 'query',
+                    name: '查询功能',
+                    description: '各种查询操作权限',
+                    children: [
+                        { id: 'query.execute', name: '执行查询', description: '执行各种查询操作' },
+                        { id: 'query.sql', name: 'SQL查询', description: '执行SQL查询' },
+                        { id: 'query.nlp', name: '自然语言查询', description: '使用自然语言查询' },
+                        { id: 'query.advanced', name: '高级查询', description: '使用高级查询功能' }
+                    ]
+                },
+                {
+                    id: 'system',
+                    name: '系统管理',
+                    description: '系统管理相关权限',
+                    children: [
+                        { id: 'system.config', name: '系统配置', description: '修改系统配置' },
+                        { id: 'system.user', name: '用户管理', description: '管理用户账户' },
+                        { id: 'system.role', name: '角色管理', description: '管理用户角色' },
+                        { id: 'system.backup', name: '备份管理', description: '管理系统备份' },
+                        { id: 'system.log', name: '日志管理', description: '查看系统日志' }
+                    ]
+                },
+                {
+                    id: 'data',
+                    name: '数据管理',
+                    description: '数据操作权限',
+                    children: [
+                        { id: 'data.read', name: '读取数据', description: '查看数据内容' },
+                        { id: 'data.write', name: '编辑数据', description: '修改数据内容' },
+                        { id: 'data.delete', name: '删除数据', description: '删除数据记录' },
+                        { id: 'data.export', name: '导出数据', description: '导出数据内容' },
+                        { id: 'data.import', name: '导入数据', description: '导入数据文件' }
+                    ]
+                },
+                {
+                    id: 'tag',
+                    name: '标签管理',
+                    description: '标签和分类管理',
+                    children: [
+                        { id: 'tag.manage', name: '管理标签', description: '创建编辑标签' },
+                        { id: 'tag.category', name: '管理分类', description: '管理标签分类' },
+                        { id: 'tag.assign', name: '分配标签', description: '给文档分配标签' }
+                    ]
+                }
+            ];
+
+            // 模拟用户数据
+            users = [
+                {
+                    id: 1,
+                    name: '张三',
+                    email: 'zhangsan@company.com',
+                    roleId: 1,
+                    roleName: '系统管理员',
+                    status: 'active',
+                    lastLogin: '2024-01-15 14:30:25',
+                    permissions: ['all']
+                },
+                {
+                    id: 2,
+                    name: '李四',
+                    email: 'lisi@company.com',
+                    roleId: 2,
+                    roleName: '知识库管理员',
+                    status: 'active',
+                    lastLogin: '2024-01-15 09:15:42',
+                    permissions: ['doc.read', 'doc.write', 'doc.delete', 'tag.manage']
+                },
+                {
+                    id: 3,
+                    name: '王五',
+                    email: 'wangwu@company.com',
+                    roleId: 3,
+                    roleName: '数据分析师',
+                    status: 'active',
+                    lastLogin: '2024-01-14 16:45:18',
+                    permissions: ['data.read', 'data.export', 'query.execute']
+                },
+                {
+                    id: 4,
+                    name: '赵六',
+                    email: 'zhaoliu@company.com',
+                    roleId: 4,
+                    roleName: '普通用户',
+                    status: 'inactive',
+                    lastLogin: '2024-01-10 11:20:33',
+                    permissions: ['doc.read', 'query.execute']
+                }
+            ];
+
+            // 模拟审计日志
+            auditLogs = [
+                {
+                    id: 1,
+                    timestamp: '2024-01-15 14:35:10',
+                    user: '张三',
+                    action: '修改角色权限',
+                    resource: '知识库管理员',
+                    status: 'success',
+                    details: '添加了文档导入权限'
+                },
+                {
+                    id: 2,
+                    timestamp: '2024-01-15 14:32:25',
+                    user: '李四',
+                    action: '删除文档',
+                    resource: '技术文档/AI指南',
+                    status: 'success',
+                    details: '删除了过时的AI指南文档'
+                },
+                {
+                    id: 3,
+                    timestamp: '2024-01-15 14:28:15',
+                    user: '王五',
+                    action: '执行查询',
+                    resource: '数据分析/销售报表',
+                    status: 'failed',
+                    details: '权限不足，无法访问销售数据'
+                },
+                {
+                    id: 4,
+                    timestamp: '2024-01-15 14:25:40',
+                    user: '赵六',
+                    action: '登录系统',
+                    resource: '系统登录',
+                    status: 'warning',
+                    details: '连续3次密码错误，账户被锁定5分钟'
+                },
+                {
+                    id: 5,
+                    timestamp: '2024-01-15 14:20:05',
+                    user: '张三',
+                    action: '创建用户',
+                    resource: '用户管理/新员工',
+                    status: 'success',
+                    details: '为新员工创建账户并分配角色'
+                }
+            ];
+
+            renderRoles();
+            renderPermissions();
+            renderUsers();
+            renderAuditLogs();
+            updateStats();
+            setupEventListeners();
+        }
+
+        // 渲染角色列表
+        function renderRoles() {
+            const roleList = document.getElementById('roleList');
+            
+            roleList.innerHTML = roles.map(role => `
+                <div class="role-item ${currentRole && currentRole.id === role.id ? 'active' : ''}" 
+                     onclick="selectRole(${role.id})">
+                    <div class="role-info">
+                        <div class="role-name">${role.name}</div>
+                        <div class="role-description">${role.description}</div>
+                    </div>
+                    <div class="role-count">${role.userCount}</div>
+                </div>
+            `).join('');
+        }
+
+        // 选择角色
+        function selectRole(roleId) {
+            currentRole = roles.find(role => role.id === roleId);
+            renderRoles();
+            renderPermissions();
+        }
+
+        // 渲染权限树
+        function renderPermissions() {
+            const permissionTree = document.getElementById('permissionTree');
+            
+            if (!currentRole) {
+                permissionTree.innerHTML = '<div style="text-align: center; color: #666; padding: 40px;">请选择一个角色来配置权限</div>';
+                return;
+            }
+
+            permissionTree.innerHTML = permissions.map(permissionGroup => `
+                <div class="permission-group">
+                    <div class="permission-header">
+                        <div>
+                            <div style="font-weight: 600;">${permissionGroup.name}</div>
+                            <div style="font-size: 12px; color: #666;">${permissionGroup.description}</div>
+                        </div>
+                        <div class="permission-actions">
+                            <button class="btn btn-sm btn-secondary" onclick="toggleGroupPermissions('${permissionGroup.id}')">
+                                全选/取消
+                            </button>
+                        </div>
+                    </div>
+                    ${permissionGroup.children.map(permission => `
+                        <div class="permission-item">
+                            <div class="permission-info">
+                                <div class="permission-name">${permission.name}</div>
+                                <div class="permission-description">${permission.description}</div>
+                            </div>
+                            <div class="permission-actions">
+                                <div class="permission-level">
+                                    <button class="level-btn ${getPermissionLevel(currentRole.permissions, permission.id) === 'none' ? 'active' : ''}" 
+                                            onclick="setPermissionLevel('${permission.id}', 'none')">
+                                        无权限
+                                    </button>
+                                    <button class="level-btn ${getPermissionLevel(currentRole.permissions, permission.id) === 'read' ? 'active' : ''}" 
+                                            onclick="setPermissionLevel('${permission.id}', 'read')">
+                                        只读
+                                    </button>
+                                    <button class="level-btn ${getPermissionLevel(currentRole.permissions, permission.id) === 'write' ? 'active' : ''}" 
+                                            onclick="setPermissionLevel('${permission.id}', 'write')">
+                                        读写
+                                    </button>
+                                    <button class="level-btn ${getPermissionLevel(currentRole.permissions, permission.id) === 'admin' ? 'active' : ''}" 
+                                            onclick="setPermissionLevel('${permission.id}', 'admin')">
+                                        管理
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `).join('');
+        }
+
+        // 获取权限级别
+        function getPermissionLevel(rolePermissions, permissionId) {
+            if (rolePermissions.includes('all')) return 'admin';
+            if (rolePermissions.includes(permissionId)) return 'write';
+            return 'none';
+        }
+
+        // 设置权限级别
+        function setPermissionLevel(permissionId, level) {
+            if (!currentRole) return;
+            
+            // 这里应该实现实际的权限更新逻辑
+            console.log(`设置权限 ${permissionId} 为级别 ${level}`);
+            
+            // 重新渲染权限显示
+            renderPermissions();
+        }
+
+        // 切换组权限
+        function toggleGroupPermissions(groupId) {
+            if (!currentRole) return;
+            
+            const permissionGroup = permissions.find(group => group.id === groupId);
+            if (permissionGroup) {
+                const allHavePermission = permissionGroup.children.every(permission => 
+                    currentRole.permissions.includes(permission.id) || currentRole.permissions.includes('all')
+                );
+                
+                if (allHavePermission) {
+                    // 取消所有权限
+                    permissionGroup.children.forEach(permission => {
+                        const index = currentRole.permissions.indexOf(permission.id);
+                        if (index > -1) {
+                            currentRole.permissions.splice(index, 1);
+                        }
+                    });
+                } else {
+                    // 添加所有权限
+                    permissionGroup.children.forEach(permission => {
+                        if (!currentRole.permissions.includes(permission.id)) {
+                            currentRole.permissions.push(permission.id);
+                        }
+                    });
+                }
+                
+                renderPermissions();
+            }
+        }
+
+        // 渲染用户列表
+        function renderUsers() {
+            const userGrid = document.getElementById('userGrid');
+            
+            userGrid.innerHTML = users.map(user => `
+                <div class="user-card">
+                    <div class="user-header">
+                        <div class="user-avatar">${user.name.charAt(0)}</div>
+                        <div class="user-info">
+                            <div class="user-name">${user.name}</div>
+                            <div class="user-email">${user.email}</div>
+                        </div>
+                        <div class="user-role">${user.roleName}</div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                        <div>
+                            <div style="font-size: 12px; color: #666;">最后登录</div>
+                            <div style="font-size: 12px;">${user.lastLogin}</div>
+                        </div>
+                        <div class="permission-actions">
+                            <button class="btn btn-sm btn-primary" onclick="editUser(${user.id})">
+                                编辑
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">
+                                删除
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 渲染审计日志
+        function renderAuditLogs() {
+            const auditLogBody = document.getElementById('auditLogBody');
+            
+            auditLogBody.innerHTML = auditLogs.map(log => `
+                <tr>
+                    <td>${log.timestamp}</td>
+                    <td>${log.user}</td>
+                    <td>${log.action}</td>
+                    <td>${log.resource}</td>
+                    <td>
+                        <span class="log-status ${log.status}">
+                            ${log.status === 'success' ? '成功' : log.status === 'failed' ? '失败' : '警告'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary" onclick="showLogDetails(${log.id})">
+                            详情
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            document.getElementById('totalUsers').textContent = users.length;
+            document.getElementById('totalRoles').textContent = roles.length;
+            
+            const activePermissions = roles.reduce((total, role) => total + role.permissions.length, 0);
+            document.getElementById('activePermissions').textContent = activePermissions;
+            
+            const securityEvents = auditLogs.filter(log => log.status !== 'success').length;
+            document.getElementById('securityEvents').textContent = securityEvents;
+        }
+
+        // 模态框功能
+        function showAddRoleModal() {
+            document.getElementById('roleModalTitle').textContent = '新建角色';
+            document.getElementById('roleForm').reset();
+            document.getElementById('roleModal').classList.add('active');
+        }
+
+        function showAddUserModal() {
+            alert('添加用户功能开发中...');
+        }
+
+        function showPermissionMatrix() {
+            renderPermissionMatrix();
+            document.getElementById('permissionMatrixModal').classList.add('active');
+        }
+
+        function closeRoleModal() {
+            document.getElementById('roleModal').classList.remove('active');
+        }
+
+        function closePermissionMatrix() {
+            document.getElementById('permissionMatrixModal').classList.remove('active');
+        }
+
+        // 渲染权限矩阵
+        function renderPermissionMatrix() {
+            const content = document.getElementById('permissionMatrixContent');
+            
+            // 获取所有权限ID
+            const allPermissions = [];
+            permissions.forEach(group => {
+                group.children.forEach(permission => {
+                    allPermissions.push(permission);
+                });
+            });
+
+            content.innerHTML = `
+                <div class="permission-matrix">
+                    <div class="matrix-header">资源/操作</div>
+                    ${roles.map(role => `<div class="matrix-header">${role.name}</div>`).join('')}
+                    
+                    ${allPermissions.map(permission => `
+                        <div class="matrix-cell resource">${permission.name}</div>
+                        ${roles.map(role => `
+                            <div class="matrix-cell">
+                                <input type="checkbox" class="checkbox-custom" 
+                                       ${role.permissions.includes(permission.id) || role.permissions.includes('all') ? 'checked' : ''}
+                                       onchange="toggleMatrixPermission(${role.id}, '${permission.id}')">
+                            </div>
+                        `).join('')}
+                    `).join('')}
+                </div>
+                <div style="margin-top: 20px; text-align: right;">
+                    <button class="btn btn-primary" onclick="savePermissionMatrix()">保存矩阵</button>
+                    <button class="btn btn-secondary" onclick="closePermissionMatrix()">取消</button>
+                </div>
+            `;
+        }
+
+        // 切换矩阵中的权限
+        function toggleMatrixPermission(roleId, permissionId) {
+            const role = roles.find(r => r.id === roleId);
+            if (role) {
+                const index = role.permissions.indexOf(permissionId);
+                if (index > -1) {
+                    role.permissions.splice(index, 1);
+                } else {
+                    role.permissions.push(permissionId);
+                }
+            }
+        }
+
+        // 保存权限矩阵
+        function savePermissionMatrix() {
+            closePermissionMatrix();
+            alert('权限矩阵已保存！');
+        }
+
+        // 保存角色
+        function saveRole(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('roleName').value;
+            const description = document.getElementById('roleDescription').value;
+            const level = parseInt(document.getElementById('roleLevel').value);
+            
+            const newRole = {
+                id: Date.now(),
+                name: name,
+                description: description,
+                level: level,
+                userCount: 0,
+                permissions: [],
+                isSystem: false
+            };
+            
+            roles.push(newRole);
+            renderRoles();
+            updateStats();
+            closeRoleModal();
+            alert('角色创建成功！');
+        }
+
+        // 编辑用户
+        function editUser(userId) {
+            const user = users.find(u => u.id === userId);
+            if (user) {
+                alert(`编辑用户: ${user.name}`);
+            }
+        }
+
+        // 删除用户
+        function deleteUser(userId) {
+            if (confirm('确定要删除这个用户吗？')) {
+                users = users.filter(user => user.id !== userId);
+                renderUsers();
+                updateStats();
+                alert('用户删除成功！');
+            }
+        }
+
+        // 显示日志详情
+        function showLogDetails(logId) {
+            const log = auditLogs.find(l => l.id === logId);
+            if (log) {
+                alert(`日志详情:\n时间: ${log.timestamp}\n用户: ${log.user}\n操作: ${log.action}\n资源: ${log.resource}\n状态: ${log.status}\n详情: ${log.details}`);
+            }
+        }
+
+        // 搜索功能
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                // 实现搜索逻辑
+                console.log('搜索:', searchTerm);
+            });
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initializeData);
+    </script>
+</body>
+</html>

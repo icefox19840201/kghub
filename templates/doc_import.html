@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文档入库 - 知识库系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 60px 40px;
+            text-align: center;
+            background: #f8f9ff;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            background: #f0f4ff;
+            border-color: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .upload-area.dragover {
+            background: #e8f2ff;
+            border-color: #4c51bf;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 64px;
+            color: #667eea;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .upload-text {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .upload-hint {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-list {
+            margin-top: 30px;
+        }
+
+        .file-item {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+
+        .file-icon {
+            font-size: 32px;
+            color: #667eea;
+            min-width: 40px;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .file-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .status-pending {
+            background: #fef3cd;
+            color: #856404;
+        }
+
+        .status-uploading {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-processing {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-left: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .metadata-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .batch-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .preview-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+        }
+
+        .preview-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow: hidden;
+        }
+
+        .preview-header {
+            padding: 20px 30px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-body {
+            padding: 30px;
+            overflow-y: auto;
+            max-height: calc(80vh - 140px);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .checkbox {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .upload-area {
+                padding: 40px 20px;
+            }
+            
+            .file-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .file-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .stats {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 文档入库</h1>
+            <p>将您的文档安全高效地导入到知识库系统中</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 上传区域 -->
+            <div class="upload-section">
+                <h2 class="section-title">
+                    <span>📤</span>
+                    <span>选择或拖拽文档</span>
+                </h2>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">点击或拖拽文件到此处上传</div>
+                    <div class="upload-hint">
+                        支持 PDF、Word、Excel、PowerPoint、文本文件、Markdown 等多种格式<br>
+                        单个文件最大支持 50MB，可同时上传多个文件
+                    </div>
+                </div>
+                <input type="file" id="fileInput" class="file-input" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md">
+            </div>
+
+            <!-- 元数据配置 -->
+            <div class="metadata-section">
+                <h3 class="section-title">
+                    <span>⚙️</span>
+                    <span>默认元数据设置</span>
+                </h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div class="form-group">
+                        <label class="form-label">默认分类</label>
+                        <select class="form-select" id="defaultCategory">
+                            <option value="">自动识别</option>
+                            <option value="技术文档">技术文档</option>
+                            <option value="业务文档">业务文档</option>
+                            <option value="规章制度">规章制度</option>
+                            <option value="培训资料">培训资料</option>
+                            <option value="操作手册">操作手册</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">默认标签</label>
+                        <input type="text" class="form-input" id="defaultTags" placeholder="用逗号分隔多个标签">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">访问权限</label>
+                        <select class="form-select" id="defaultPermission">
+                            <option value="public">公开</option>
+                            <option value="internal">内部</option>
+                            <option value="confidential">机密</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">文档语言</label>
+                        <select class="form-select" id="defaultLanguage">
+                            <option value="auto">自动检测</option>
+                            <option value="zh">中文</option>
+                            <option value="en">英文</option>
+                            <option value="ja">日文</option>
+                            <option value="ko">韩文</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 文件列表 -->
+            <div class="file-list" id="fileList">
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-icon">📄</div>
+                    <h3>暂无待入库文档</h3>
+                    <p>请选择或拖拽文件开始入库流程</p>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="action-buttons" id="actionButtons" style="display: none;">
+                <div class="batch-actions">
+                    <button class="btn btn-primary" onclick="startImport()">
+                        <span>🚀</span> 开始入库
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearAll()">
+                        <span>🗑️</span> 清空列表
+                    </button>
+                    <button class="btn btn-secondary" onclick="downloadTemplate()">
+                        <span>📋</span> 下载模板
+                    </button>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalFiles">0</div>
+                        <div class="stat-label">总文件数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalSize">0MB</div>
+                        <div class="stat-label">总大小</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="readyFiles">0</div>
+                        <div class="stat-label">待入库</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 预览模态框 -->
+    <div class="preview-modal" id="previewModal">
+        <div class="preview-content">
+            <div class="preview-header">
+                <h3 id="previewTitle">文档预览</h3>
+                <button class="close-btn" onclick="closePreview()">&times;</button>
+            </div>
+            <div class="preview-body" id="previewBody">
+                <!-- 预览内容将在这里显示 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let uploadQueue = [];
+        let currentImportIndex = 0;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+
+            // 点击上传
+            uploadArea.addEventListener('click', () => fileInput.click());
+            
+            // 文件选择
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            // 拖拽上传
+            uploadArea.addEventListener('dragover', handleDragOver);
+            uploadArea.addEventListener('drop', handleDrop);
+            uploadArea.addEventListener('dragleave', handleDragLeave);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            
+            const files = Array.from(e.dataTransfer.files);
+            processFiles(files);
+        }
+
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            processFiles(files);
+        }
+
+        function processFiles(files) {
+            const validFiles = files.filter(file => {
+                const validTypes = [
+                    'application/pdf',
+                    'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'application/vnd.ms-excel',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'application/vnd.ms-powerpoint',
+                    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                    'text/plain',
+                    'text/markdown'
+                ];
+                
+                const maxSize = 50 * 1024 * 1024; // 50MB
+                
+                return validTypes.includes(file.type) && file.size <= maxSize;
+            });
+
+            if (validFiles.length !== files.length) {
+                alert(`部分文件格式不支持或超过50MB限制，已过滤 ${files.length - validFiles.length} 个文件`);
+            }
+
+            validFiles.forEach(file => {
+                const fileData = {
+                    id: Date.now() + Math.random(),
+                    file: file,
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    status: 'pending',
+                    progress: 0,
+                    metadata: {
+                        title: file.name.replace(/\.[^/.]+$/, ""),
+                        category: document.getElementById('defaultCategory').value,
+                        tags: document.getElementById('defaultTags').value.split(',').map(tag => tag.trim()).filter(tag => tag),
+                        permission: document.getElementById('defaultPermission').value,
+                        language: document.getElementById('defaultLanguage').value,
+                        description: ''
+                    }
+                };
+                
+                uploadQueue.push(fileData);
+            });
+
+            renderFileList();
+            updateStats();
+        }
+
+        function renderFileList() {
+            const fileList = document.getElementById('fileList');
+            const emptyState = document.getElementById('emptyState');
+            const actionButtons = document.getElementById('actionButtons');
+
+            if (uploadQueue.length === 0) {
+                emptyState.style.display = 'block';
+                actionButtons.style.display = 'none';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            actionButtons.style.display = 'flex';
+
+            fileList.innerHTML = uploadQueue.map(item => `
+                <div class="file-item" id="file-${item.id}">
+                    <input type="checkbox" class="checkbox" onchange="toggleFileSelection(${item.id})">
+                    <div class="file-icon">${getFileIcon(item.type)}</div>
+                    <div class="file-info">
+                        <div class="file-name">${item.name}</div>
+                        <div class="file-size">${formatFileSize(item.size)}</div>
+                    </div>
+                    <div class="progress-bar" style="display: ${item.status === 'uploading' || item.status === 'processing' ? 'block' : 'none'};">
+                        <div class="progress-fill" style="width: ${item.progress}%"></div>
+                    </div>
+                    <div class="file-status status-${item.status}">
+                        ${getStatusText(item.status)}
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn btn-sm btn-secondary" onclick="previewFile(${item.id})">👁️ 预览</button>
+                        <button class="btn btn-sm btn-primary" onclick="editMetadata(${item.id})">✏️ 编辑</button>
+                        <button class="btn btn-sm btn-danger" onclick="removeFile(${item.id})">🗑️ 移除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getFileIcon(type) {
+            const iconMap = {
+                'application/pdf': '📄',
+                'application/msword': '📝',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '📝',
+                'application/vnd.ms-excel': '📊',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '📊',
+                'application/vnd.ms-powerpoint': '📽️',
+                'application/vnd.openxmlformats-officedocument.presentationml.presentation': '📽️',
+                'text/plain': '📃',
+                'text/markdown': '📝'
+            };
+            
+            return iconMap[type] || '📎';
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': '待处理',
+                'uploading': '上传中',
+                'processing': '处理中',
+                'completed': '已完成',
+                'error': '错误'
+            };
+            
+            return statusMap[status] || '未知';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        function updateStats() {
+            const totalFiles = uploadQueue.length;
+            const totalSize = uploadQueue.reduce((sum, item) => sum + item.size, 0);
+            const readyFiles = uploadQueue.filter(item => item.status === 'pending').length;
+
+            document.getElementById('totalFiles').textContent = totalFiles;
+            document.getElementById('totalSize').textContent = formatFileSize(totalSize);
+            document.getElementById('readyFiles').textContent = readyFiles;
+        }
+
+        function removeFile(id) {
+            uploadQueue = uploadQueue.filter(item => item.id !== id);
+            renderFileList();
+            updateStats();
+        }
+
+        function clearAll() {
+            if (confirm('确定要清空所有文件吗？')) {
+                uploadQueue = [];
+                renderFileList();
+                updateStats();
+            }
+        }
+
+        function previewFile(id) {
+            const item = uploadQueue.find(item => item.id === id);
+            if (!item) return;
+
+            // 模拟预览功能
+            const previewModal = document.getElementById('previewModal');
+            const previewTitle = document.getElementById('previewTitle');
+            const previewBody = document.getElementById('previewBody');
+
+            previewTitle.textContent = `预览: ${item.name}`;
+            previewBody.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">${getFileIcon(item.type)}</div>
+                    <h3>${item.name}</h3>
+                    <p>大小: ${formatFileSize(item.size)}</p>
+                    <p>类型: ${item.type}</p>
+                    <p>状态: ${getStatusText(item.status)}</p>
+                    <div style="margin-top: 20px;">
+                        <h4>元数据信息:</h4>
+                        <p><strong>标题:</strong> ${item.metadata.title}</p>
+                        <p><strong>分类:</strong> ${item.metadata.category || '未设置'}</p>
+                        <p><strong>标签:</strong> ${item.metadata.tags.join(', ') || '无'}</p>
+                        <p><strong>权限:</strong> ${getPermissionText(item.metadata.permission)}</p>
+                        <p><strong>语言:</strong> ${getLanguageText(item.metadata.language)}</p>
+                    </div>
+                </div>
+            `;
+
+            previewModal.style.display = 'block';
+        }
+
+        function closePreview() {
+            document.getElementById('previewModal').style.display = 'none';
+        }
+
+        function editMetadata(id) {
+            const item = uploadQueue.find(item => item.id === id);
+            if (!item) return;
+
+            // 这里可以实现元数据编辑功能
+            const newTitle = prompt('修改文档标题:', item.metadata.title);
+            if (newTitle && newTitle.trim()) {
+                item.metadata.title = newTitle.trim();
+                renderFileList();
+            }
+        }
+
+        function getPermissionText(permission) {
+            const map = {
+                'public': '公开',
+                'internal': '内部',
+                'confidential': '机密'
+            };
+            return map[permission] || permission;
+        }
+
+        function getLanguageText(language) {
+            const map = {
+                'auto': '自动检测',
+                'zh': '中文',
+                'en': '英文',
+                'ja': '日文',
+                'ko': '韩文'
+            };
+            return map[language] || language;
+        }
+
+        function startImport() {
+            const readyFiles = uploadQueue.filter(item => item.status === 'pending');
+            
+            if (readyFiles.length === 0) {
+                alert('没有待入库的文件');
+                return;
+            }
+
+            if (confirm(`确定要开始入库 ${readyFiles.length} 个文件吗？`)) {
+                currentImportIndex = 0;
+                importNextFile();
+            }
+        }
+
+        function importNextFile() {
+            const readyFiles = uploadQueue.filter(item => item.status === 'pending');
+            
+            if (currentImportIndex >= readyFiles.length) {
+                showSuccess('所有文件入库完成！');
+                return;
+            }
+
+            const file = readyFiles[currentImportIndex];
+            simulateImport(file);
+        }
+
+        function simulateImport(fileItem) {
+            fileItem.status = 'uploading';
+            fileItem.progress = 0;
+            renderFileList();
+
+            // 模拟上传过程
+            const uploadInterval = setInterval(() => {
+                fileItem.progress += Math.random() * 20;
+                if (fileItem.progress > 100) fileItem.progress = 100;
+                
+                renderFileList();
+
+                if (fileItem.progress >= 100) {
+                    clearInterval(uploadInterval);
+                    
+                    // 模拟处理过程
+                    fileItem.status = 'processing';
+                    fileItem.progress = 0;
+                    renderFileList();
+
+                    const processInterval = setInterval(() => {
+                        fileItem.progress += Math.random() * 15;
+                        if (fileItem.progress > 100) fileItem.progress = 100;
+                        
+                        renderFileList();
+
+                        if (fileItem.progress >= 100) {
+                            clearInterval(processInterval);
+                            fileItem.status = 'completed';
+                            fileItem.progress = 100;
+                            renderFileList();
+
+                            currentImportIndex++;
+                            setTimeout(importNextFile, 500);
+                        }
+                    }, 300);
+                }
+            }, 200);
+        }
+
+        function downloadTemplate() {
+            // 模拟下载模板功能
+            const templateContent = `文档标题,分类,标签,权限,语言,描述
+示例文档,技术文档,"技术,示例",public,zh,这是一个示例文档
+`;
+            
+            const blob = new Blob([templateContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '文档入库模板.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #28a745;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 6px;
+                z-index: 10000;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                animation: slideIn 0.3s ease;
+            `;
+            successDiv.textContent = message;
+            
+            // 添加动画样式
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(successDiv);
+            
+            setTimeout(() => {
+                successDiv.remove();
+                style.remove();
+            }, 3000);
+        }
+
+        // 点击模态框外部关闭
+        window.addEventListener('click', function(e) {
+            const previewModal = document.getElementById('previewModal');
+            if (e.target === previewModal) {
+                closePreview();
+            }
+        });
+    </script>
+</body>
+</html>

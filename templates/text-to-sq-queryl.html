@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自然语言转SQL查询</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 30px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .input-area {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .text-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .sql-result {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .query-results {
+            margin-top: 20px;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .results-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .results-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .results-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #667eea;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .suggestion-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .suggestion-tag:hover {
+            background: #1976d2;
+            color: white;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            border-left: 4px solid #c62828;
+        }
+
+        .success-message {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="section">
+            <h2>💬 自然语言转SQL查询</h2>
+            <div class="input-area">
+                <label class="input-label">用自然语言描述您的查询需求：</label>
+                <textarea class="text-input" id="naturalInput" placeholder="例如：查询最近一个月内销售额超过1000元的订单，按金额降序排列"></textarea>
+            </div>
+            
+            <div class="suggestions">
+                <span class="suggestion-tag" onclick="useSuggestion('查询所有用户的基本信息')">查询所有用户的基本信息</span>
+                <span class="suggestion-tag" onclick="useSuggestion('统计每个分类的商品数量')">统计每个分类的商品数量</span>
+                <span class="suggestion-tag" onclick="useSuggestion('查找最近一周的订单数据')">查找最近一周的订单数据</span>
+                <span class="suggestion-tag" onclick="useSuggestion('计算平均销售额')">计算平均销售额</span>
+                <span class="suggestion-tag" onclick="useSuggestion('找出销量最高的产品')">找出销量最高的产品</span>
+            </div>
+
+            <button class="btn btn-primary" onclick="convertToSQL()">🔄 转换为SQL</button>
+            <button class="btn btn-secondary" onclick="clearInput()">🗑️ 清空</button>
+        </div>
+
+        <div class="section" id="sqlSection" style="display: none;">
+            <h2>📝 生成的SQL语句</h2>
+            <div id="sqlResult" class="sql-result"></div>
+            <button class="btn btn-primary" onclick="executeSQL()">▶️ 执行查询</button>
+            <button class="btn btn-secondary" onclick="copySQL()">📋 复制SQL</button>
+        </div>
+
+        <div class="section" id="resultsSection" style="display: none;">
+            <h2>📊 查询结果</h2>
+            <div id="queryResults" class="query-results"></div>
+            
+            <div class="stats" id="statsSection" style="display: none;">
+                <div class="stat-item">
+                    <div class="stat-number" id="rowCount">0</div>
+                    <div class="stat-label">返回行数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="execTime">0</div>
+                    <div class="stat-label">执行时间(秒)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="affectedRows">0</div>
+                    <div class="stat-label">影响行数</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟的SQL转换函数
+        function convertToSQL() {
+            const input = document.getElementById('naturalInput').value.trim();
+            
+            if (!input) {
+                showError('请输入您的查询需求');
+                return;
+            }
+
+            showLoading();
+
+            // 模拟AI转换过程
+            setTimeout(() => {
+                const sql = generateSQL(input);
+                displaySQL(sql);
+            }, 1500);
+        }
+
+        function generateSQL(naturalText) {
+            // 简化的自然语言到SQL转换逻辑
+            let sql = '';
+            
+            if (naturalText.includes('所有用户') || naturalText.includes('用户信息')) {
+                sql = 'SELECT * FROM users ORDER BY created_at DESC LIMIT 100;';
+            } else if (naturalText.includes('分类') && naturalText.includes('商品数量')) {
+                sql = 'SELECT category, COUNT(*) as product_count FROM products GROUP BY category ORDER BY product_count DESC;';
+            } else if (naturalText.includes('最近一周') && naturalText.includes('订单')) {
+                sql = 'SELECT * FROM orders WHERE order_date >= DATE_SUB(NOW(), INTERVAL 1 WEEK) ORDER BY order_date DESC;';
+            } else if (naturalText.includes('平均销售额')) {
+                sql = 'SELECT AVG(total_amount) as avg_sales FROM orders WHERE status = "completed";';
+            } else if (naturalText.includes('销量最高') || naturalText.includes('销量最多')) {
+                sql = 'SELECT product_name, SUM(quantity) as total_sales FROM order_items GROUP BY product_name ORDER BY total_sales DESC LIMIT 10;';
+            } else if (naturalText.includes('销售额') && naturalText.includes('1000')) {
+                sql = 'SELECT * FROM orders WHERE total_amount > 1000 AND order_date >= DATE_SUB(NOW(), INTERVAL 1 MONTH) ORDER BY total_amount DESC;';
+            } else {
+                sql = '-- 基于您的需求生成的SQL\nSELECT * FROM your_table WHERE conditions = "your_conditions" ORDER BY your_column DESC;';
+            }
+            
+            return sql;
+        }
+
+        function displaySQL(sql) {
+            document.getElementById('sqlSection').style.display = 'block';
+            document.getElementById('sqlResult').textContent = sql;
+            hideLoading();
+            showSuccess('SQL语句生成成功！');
+        }
+
+        function executeSQL() {
+            const sql = document.getElementById('sqlResult').textContent;
+            
+            showLoading();
+            document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('queryResults').innerHTML = '<div class="loading">正在执行查询...</div>';
+
+            // 模拟查询执行
+            setTimeout(() => {
+                const results = generateMockResults(sql);
+                displayResults(results);
+                hideLoading();
+            }, 2000);
+        }
+
+        function generateMockResults(sql) {
+            // 根据SQL类型生成模拟结果
+            if (sql.includes('users')) {
+                return {
+                    columns: ['用户ID', '用户名', '邮箱', '注册时间'],
+                    data: [
+                        [1, '张三', 'zhangsan@example.com', '2024-01-15 10:30:00'],
+                        [2, '李四', 'lisi@example.com', '2024-02-20 14:20:00'],
+                        [3, '王五', 'wangwu@example.com', '2024-03-10 09:15:00'],
+                        [4, '赵六', 'zhaoliu@example.com', '2024-04-05 16:45:00'],
+                        [5, '孙七', 'sunqi@example.com', '2024-05-12 11:30:00']
+                    ]
+                };
+            } else if (sql.includes('category') && sql.includes('COUNT')) {
+                return {
+                    columns: ['分类', '商品数量'],
+                    data: [
+                        ['电子产品', 156],
+                        ['服装', 89],
+                        ['图书', 234],
+                        ['家居用品', 67],
+                        ['运动用品', 123]
+                    ]
+                };
+            } else if (sql.includes('orders')) {
+                return {
+                    columns: ['订单ID', '用户ID', '订单金额', '状态', '订单时间'],
+                    data: [
+                        [1001, 1, 299.99, '已完成', '2024-12-01 10:30:00'],
+                        [1002, 2, 599.50, '已发货', '2024-12-02 14:20:00'],
+                        [1003, 3, 1299.00, '已完成', '2024-12-03 09:15:00'],
+                        [1004, 4, 89.99, '待发货', '2024-12-04 16:45:00'],
+                        [1005, 5, 1999.99, '已完成', '2024-12-05 11:30:00']
+                    ]
+                };
+            } else {
+                return {
+                    columns: ['结果'],
+                    data: [['暂无数据']]
+                };
+            }
+        }
+
+        function displayResults(results) {
+            const resultsContainer = document.getElementById('queryResults');
+            
+            if (!results || results.data.length === 0) {
+                resultsContainer.innerHTML = '<div class="no-results">暂无查询结果</div>';
+                return;
+            }
+
+            let html = '<table class="results-table">';
+            
+            // 表头
+            html += '<thead><tr>';
+            results.columns.forEach(column => {
+                html += `<th>${column}</th>`;
+            });
+            html += '</tr></thead>';
+            
+            // 数据行
+            html += '<tbody>';
+            results.data.forEach(row => {
+                html += '<tr>';
+                row.forEach(cell => {
+                    html += `<td>${cell}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+
+            resultsContainer.innerHTML = html;
+            
+            // 显示统计信息
+            document.getElementById('statsSection').style.display = 'flex';
+            document.getElementById('rowCount').textContent = results.data.length;
+            document.getElementById('execTime').textContent = (Math.random() * 2 + 0.5).toFixed(2);
+            document.getElementById('affectedRows').textContent = results.data.length;
+        }
+
+        function copySQL() {
+            const sql = document.getElementById('sqlResult').textContent;
+            navigator.clipboard.writeText(sql).then(() => {
+                showSuccess('SQL语句已复制到剪贴板！');
+            }).catch(() => {
+                showError('复制失败，请手动复制');
+            });
+        }
+
+        function clearInput() {
+            document.getElementById('naturalInput').value = '';
+            document.getElementById('sqlSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'none';
+        }
+
+        function useSuggestion(text) {
+            document.getElementById('naturalInput').value = text;
+            convertToSQL();
+        }
+
+        function showLoading() {
+            const sqlSection = document.getElementById('sqlSection');
+            if (sqlSection.style.display === 'none') {
+                sqlSection.style.display = 'block';
+                document.getElementById('sqlResult').innerHTML = '<div class="loading">正在生成SQL...</div>';
+            }
+        }
+
+        function hideLoading() {
+            const loadingElements = document.querySelectorAll('.loading');
+            loadingElements.forEach(el => el.remove());
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            
+            const section = document.querySelector('.section');
+            section.appendChild(errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 3000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.textContent = message;
+            
+            const section = document.querySelector('.section');
+            section.appendChild(successDiv);
+            
+            setTimeout(() => {
+                successDiv.remove();
+            }, 3000);
+        }
+
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('自然语言转SQL查询页面已加载');
+        });
+    </script>
+</body>
+</html>

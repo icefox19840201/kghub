@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文档解析问答</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 30px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .upload-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            background-color: #f0f4ff;
+            border-color: #5a67d8;
+        }
+
+        .upload-area.dragover {
+            background-color: #e6f2ff;
+            border-color: #4c51bf;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .qa-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .qa-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .qa-title {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .doc-info {
+            background: #e6f2ff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: #4c51bf;
+            font-size: 14px;
+        }
+
+        .question-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .question-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .ask-btn {
+            margin-top: 15px;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .ask-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .ask-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .qa-history {
+            margin-top: 30px;
+        }
+
+        .qa-item {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .question {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .answer {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .qa-time {
+            font-size: 12px;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        .no-doc {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="upload-section" id="uploadSection">
+            <h2>文档解析问答</h2>
+            <p>上传文档后，您可以针对文档内容进行提问</p>
+            
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">点击或拖拽文件到此处上传</div>
+                <div class="upload-hint">支持 PDF, DOC, DOCX, TXT 格式</div>
+            </div>
+            
+            <input type="file" class="file-input" id="fileInput" accept=".pdf,.doc,.docx,.txt">
+        </div>
+
+        <div class="qa-section" id="qaSection" style="display: none;">
+            <div class="qa-header">
+                <div class="qa-title">智能问答</div>
+                <div class="doc-info" id="docInfo">文档已加载</div>
+            </div>
+            
+            <textarea class="question-input" id="questionInput" placeholder="请输入您的问题...例如：这份文档的主要内容是什么？"></textarea>
+            
+            <button class="ask-btn" id="askBtn" onclick="askQuestion()">💬 提问</button>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>正在分析文档并生成答案...</p>
+            </div>
+
+            <div class="qa-history" id="qaHistory"></div>
+        </div>
+
+        <div class="no-doc" id="noDoc">
+            <h3>请先上传文档</h3>
+            <p>上传文档后，系统将自动解析内容并支持问答功能</p>
+        </div>
+    </div>
+
+    <script>
+        let uploadedFile = null;
+        left filepath= null
+        let qaHistory = [];
+
+        // 文件上传处理
+        document.getElementById('uploadArea').addEventListener('click', function() {
+            document.getElementById('fileInput').click();
+        });
+
+        // 拖拽上传
+        const uploadArea = document.getElementById('uploadArea');
+        
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileUpload(files[0]);
+            }
+        });
+
+        // 文件选择处理
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+
+        async function handleFileUpload(file) {
+            // 验证文件类型
+            const allowedTypes = ['application/pdf', 'application/msword', 
+                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
+                                'text/plain', 'application/vnd.ms-excel', 
+                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                'text/html', 'text/markdown'];
+            
+            if (!allowedTypes.includes(file.type)) {
+                alert('请上传支持的文件格式：PDF, DOC, DOCX, TXT, XLSX, HTML, MD');
+                return;
+            }
+
+            // 验证文件大小 (最大100MB)
+            if (file.size > 100 * 1024 * 1024) {
+                alert('文件大小不能超过100MB');
+                return;
+            }
+
+            showLoading();
+            
+            // 创建FormData对象
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                // 调用后端API上传文件
+                const response = await fetch('/default/doc_upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+
+                if (result.success) {
+                    uploadedFile = file;
+                    filepath=result.data.file_path
+                    
+                    // 显示文档信息
+                    document.getElementById('docInfo').textContent = `文档: ${result.data.filename} (${formatFileSize(result.data.size)})`;
+                    
+                    // 切换界面
+                    document.getElementById('uploadSection').style.display = 'none';
+                    document.getElementById('qaSection').style.display = 'block';
+                    document.getElementById('noDoc').style.display = 'none';
+                    hideLoading();
+                   //开始提问
+                    document.getElementById('questionInput').focus();
+                    askQuestion(filepath);
+
+                } else {
+                    hideLoading();
+                    alert('文件上传失败: ' + result.message);
+                }
+            } catch (error) {
+                hideLoading();
+                alert('文件上传失败: ' + error.message);
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 移除了simulateDocumentParsing函数，因为文件上传逻辑已经集成到handleFileUpload中
+
+        function askQuestion(filepath) {
+            const question = document.getElementById('questionInput').value.trim();
+            if (!question) {
+                alert('请输入问题');
+                return;
+            }
+
+            if (!uploadedFile) {
+                alert('请先上传文档');
+                return;
+            }
+
+            showLoading();
+            
+            // 模拟AI回答
+            setTimeout(() => {
+                const answer = generateMockAnswer(question);
+                addToHistory(question, answer);
+                hideLoading();
+                document.getElementById('questionInput').value = '';
+            }, 1500);
+        }
+
+        function generateMockAnswer(question) {
+            const mockAnswers = {
+                '主要内容': '这份文档主要介绍了知识库管理系统的架构设计和实现方案，包括数据采集、存储、查询等核心功能模块。',
+                '技术': '文档中提到的技术栈包括FastAPI、PostgreSQL、Redis、Elasticsearch等现代化的技术组件。',
+                '功能': '系统主要功能包括知识库查询、文档解析、自然语言处理、数据备份恢复等模块。'
+            };
+
+            // 简单的关键词匹配
+            for (let key in mockAnswers) {
+                if (question.includes(key)) {
+                    return mockAnswers[key];
+                }
+            }
+
+            return '根据文档内容分析，这是一个关于知识库管理系统的技术文档。文档详细介绍了系统的各项功能和实现方案。如果您需要更具体的信息，请提供更详细的问题。';
+        }
+
+        function addToHistory(question, answer) {
+            const qaItem = {
+                question: question,
+                answer: answer,
+                time: new Date().toLocaleString()
+            };
+
+            qaHistory.unshift(qaItem);
+            
+            // 限制历史记录数量
+            if (qaHistory.length > 10) {
+                qaHistory = qaHistory.slice(0, 10);
+            }
+
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            const historyContainer = document.getElementById('qaHistory');
+            
+            if (qaHistory.length === 0) {
+                historyContainer.innerHTML = '<p style="text-align: center; color: #999;">暂无问答记录</p>';
+                return;
+            }
+
+            let html = '';
+            qaHistory.forEach(item => {
+                html += `
+                    <div class="qa-item">
+                        <div class="question">❓ ${item.question}</div>
+                        <div class="answer">💡 ${item.answer}</div>
+                        <div class="qa-time">${item.time}</div>
+                    </div>
+                `;
+            });
+
+            historyContainer.innerHTML = html;
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('askBtn').disabled = true;
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('askBtn').disabled = false;
+        }
+
+        // 回车键提问
+        document.getElementById('questionInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                askQuestion();
+            }
+        });
+
+        // 初始化
+        updateHistoryDisplay();
+    </script>
+</body>
+</html>
