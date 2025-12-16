@@ -161,8 +161,6 @@ cython_debug/
 .idea/
 
 # Project specific
-uploads/
-*.txt
 *.tmp
 .DS_Store
 Thumbs.db
