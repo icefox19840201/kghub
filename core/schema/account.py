@@ -29,18 +29,6 @@ class UserCreate(BaseModel):
     full_name: Optional[str] = Field(None, description='全名', max_length=100)
     phone: Optional[str] = Field(None, description='手机号', max_length=20)
     avatar: Optional[str] = Field(None, description='头像URL', max_length=255)
-    
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "username": "johndoe",
-                "email": "john@example.com",
-                "password": "securepassword123",
-                "full_name": "John Doe",
-                "phone": "13800138000",
-                "avatar": "https://example.com/avatar.jpg"
-            }
-        }
 
 
 class UserUpdate(BaseModel):
@@ -52,16 +40,6 @@ class UserUpdate(BaseModel):
     is_active: Optional[bool] = Field(None, description='是否激活')
     is_superuser: Optional[bool] = Field(None, description='是否超级管理员')
     is_staff: Optional[bool] = Field(None, description='是否员工')
-    
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "email": "newemail@example.com",
-                "full_name": "John Smith",
-                "phone": "13900139000",
-                "is_active": True
-            }
-        }
 
 
 class UserResponse(BaseModel):
@@ -79,50 +57,11 @@ class UserResponse(BaseModel):
     last_login: Optional[datetime] = Field(None, description='最后登录时间')
     created_at: datetime = Field(..., description='创建时间')
     updated_at: datetime = Field(..., description='更新时间')
-    
-    class Config:
-        from_attributes = True
-        json_schema_extra = {
-            "example": {
-                "id": 1,
-                "username": "admin",
-                "email": "admin@example.com",
-                "full_name": "Administrator",
-                "phone": "13800138000",
-                "avatar": "https://example.com/avatar.jpg",
-                "is_active": True,
-                "is_superuser": True,
-                "is_staff": True,
-                "date_joined": "2024-01-01T00:00:00",
-                "last_login": "2024-01-15T12:30:00",
-                "created_at": "2024-01-01T00:00:00",
-                "updated_at": "2024-01-15T12:30:00"
-            }
-        }
-
 
 class UserListResponse(BaseModel):
     """用户列表响应模型"""
     total: int = Field(..., description='总用户数')
     users: list[UserResponse] = Field(..., description='用户列表')
-    
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "total": 100,
-                "users": [
-                    {
-                        "id": 1,
-                        "username": "admin",
-                        "email": "admin@example.com",
-                        "full_name": "Administrator",
-                        "is_active": True,
-                        "is_superuser": True,
-                        "date_joined": "2024-01-01T00:00:00"
-                    }
-                ]
-            }
-        }
 
 
 class PasswordChange(BaseModel):
@@ -136,26 +75,11 @@ class PasswordChange(BaseModel):
         if self.new_password != self.confirm_password:
             raise ValueError('新密码和确认密码不匹配')
         return self
-    
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "old_password": "oldpassword123",
-                "new_password": "newpassword123",
-                "confirm_password": "newpassword123"
-            }
-        }
+
 
 
 class PasswordReset(BaseModel):
     """密码重置模型"""
     email: EmailStr = Field(..., description='注册邮箱')
-    
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "email": "user@example.com"
-            }
-        }
 
 

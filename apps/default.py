@@ -1,7 +1,6 @@
-from fastapi import Request, UploadFile, File, HTTPException
+from fastapi import Request, UploadFile, File
 from fastapi.responses import JSONResponse
-import os
-import uuid
+import os,uuid
 from datetime import datetime
 from core.base.viewbase import BaseView
 class Default(BaseView):
