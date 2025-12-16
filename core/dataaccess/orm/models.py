@@ -7,7 +7,7 @@ from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.sql import func
-import os
+
 
 # 获取数据库配置
 from settings import DATABASE_CONFIG
@@ -180,9 +180,12 @@ def get_session(engine):
 
 if __name__ == "__main__":
     print("开始初始化数据库...")
-    import db_engine
+
     # 创建数据库引擎
+    import db_engine
+
     engine = db_engine.create_database_engine()
+    Session = sessionmaker(bind=engine)
     print(f"✓ 数据库引擎创建成功: {engine.url}")
     
     # 创建所有表

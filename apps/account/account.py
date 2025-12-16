@@ -1,6 +1,7 @@
 from core.base.viewbase import BaseView
 from fastapi import Request
 from core.schema.account import LoginRequest
+
 class Account(BaseView):
     async def login(self,request:Request,account:LoginRequest):
         """
@@ -9,7 +10,9 @@ class Account(BaseView):
         :param account:
         :return:
         """
-        pass
+        user_name=account.username
+        password=account.password
+
     async def logout(self,request:Request):
         """
         登出
