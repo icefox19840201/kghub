@@ -134,7 +134,7 @@ class Permission(Base):
 #         # 匹配os.getenv("DB_URI", "postgresql://...")格式
 #         match = re.search(r'os.getenv\s*\(\s*"([^"]*)"\s*,\s*"([^"]*)"\s*\)', url)
 #         if match:
-#             env_var = match.group(1)
+#             env_var = match.group(上传目录.txt)
 #             default_url = match.group(2)
 #             # 再次检查环境变量
 #             env_value = os.getenv(env_var)

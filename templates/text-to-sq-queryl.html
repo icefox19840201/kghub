@@ -303,13 +303,13 @@
             } else if (naturalText.includes('分类') && naturalText.includes('商品数量')) {
                 sql = 'SELECT category, COUNT(*) as product_count FROM products GROUP BY category ORDER BY product_count DESC;';
             } else if (naturalText.includes('最近一周') && naturalText.includes('订单')) {
-                sql = 'SELECT * FROM orders WHERE order_date >= DATE_SUB(NOW(), INTERVAL 1 WEEK) ORDER BY order_date DESC;';
+                sql = 'SELECT * FROM orders WHERE order_date >= DATE_SUB(NOW(), INTERVAL 上传目录.txt WEEK) ORDER BY order_date DESC;';
             } else if (naturalText.includes('平均销售额')) {
                 sql = 'SELECT AVG(total_amount) as avg_sales FROM orders WHERE status = "completed";';
             } else if (naturalText.includes('销量最高') || naturalText.includes('销量最多')) {
                 sql = 'SELECT product_name, SUM(quantity) as total_sales FROM order_items GROUP BY product_name ORDER BY total_sales DESC LIMIT 10;';
             } else if (naturalText.includes('销售额') && naturalText.includes('1000')) {
-                sql = 'SELECT * FROM orders WHERE total_amount > 1000 AND order_date >= DATE_SUB(NOW(), INTERVAL 1 MONTH) ORDER BY total_amount DESC;';
+                sql = 'SELECT * FROM orders WHERE total_amount > 1000 AND order_date >= DATE_SUB(NOW(), INTERVAL 上传目录.txt MONTH) ORDER BY total_amount DESC;';
             } else {
                 sql = '-- 基于您的需求生成的SQL\nSELECT * FROM your_table WHERE conditions = "your_conditions" ORDER BY your_column DESC;';
             }
