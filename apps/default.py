@@ -31,6 +31,8 @@ class Default(BaseView):
         return self.template.TemplateResponse('system_settings.html',{'request':request})
     def right_settings(self,request:Request):
         return self.template.TemplateResponse('right_settings.html',{'request':request})
+    def  userlogin(self,request:Request):
+        return self.template.TemplateResponse('login.html',{'request':request})
     async def file_upload(self, request: Request, file: UploadFile = File(...)):
         '''
         文件上传
