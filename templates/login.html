@@ -297,25 +297,63 @@
                 loginButton.innerHTML = '<span class="loading"></span>登录中...';
                 loginButton.disabled = true;
                 
-                // 模拟登录请求
-                setTimeout(() => {
-                    // 这里可以添加实际的登录逻辑
-                    console.log('登录信息:', { username, password, remember });
-                    
-                    // 显示成功消息
-                    document.getElementById('successMessage').style.display = 'block';
-                    
+                // 构建请求数据
+                const loginData = {
+                    username: username,
+                    password: password
+                };
+                
+                // 发送登录请求到/accounts/login接口
+                fetch('/accounts/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(loginData)
+                })
+                .then(response => response.json())
+                .then(data => {
                     // 重置按钮状态
                     loginButton.innerHTML = '登录';
                     loginButton.disabled = false;
                     
-                    // 模拟跳转
-                    setTimeout(() => {
-                        // window.location.href = '/dashboard';
-                        alert('登录成功！（这是演示版本）');
-                    }, 1500);
+                    if (data.success) {
+                        // 登录成功
+                        document.getElementById('successMessage').style.display = 'block';
+                        
+                        // 如果选择了记住我，保存用户名
+                        if (remember) {
+                            localStorage.setItem('rememberedUsername', username);
+                        } else {
+                            localStorage.removeItem('rememberedUsername');
+                        }
+                        
+                        // 保存token（如果返回了）
+                        if (data.token) {
+                            localStorage.setItem('authToken', data.token);
+                        }
+                        
+                        // 延迟跳转
+                        setTimeout(() => {
+                            if (data.redirect_url) {
+                                window.location.href = data.redirect_url;
+                            } else {
+                                window.location.href = '/dashboard';
+                            }
+                        }, 1500);
+                    } else {
+                        // 登录失败
+                        showError('username', data.message || '登录失败，请检查用户名和密码');
+                    }
+                })
+                .catch(error => {
+                    // 重置按钮状态
+                    loginButton.innerHTML = '登录';
+                    loginButton.disabled = false;
                     
-                }, 2000);
+                    console.error('登录请求失败:', error);
+                    showError('username', '网络错误，请稍后重试');
+                });
             }
         });
         

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import  sessionmaker
-from db_engine import create_database_engine
+from core.dataaccess.orm.db_engine import create_database_engine
 from core.dataaccess.orm.models import User
 class AccountInfo:
     def __init__(self):
@@ -12,7 +12,7 @@ class AccountInfo:
         :param pwd:
         :return:
         '''
-        user = self.session.query(User).filter((User.username==user)|(User.email==user),User.password_hash==pwd).first()
+        user = self.Session.query(User).filter((User.username==user)|(User.email==user),User.password_hash==pwd).first()
         if user:
             return True
         return False

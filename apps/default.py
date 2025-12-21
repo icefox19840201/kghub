@@ -1,6 +1,7 @@
-from fastapi import Request, UploadFile, File
+from fastapi import Request, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
-import os,uuid
+import os
+import uuid
 from datetime import datetime
 from core.base.viewbase import BaseView
 class Default(BaseView):
@@ -30,8 +31,6 @@ class Default(BaseView):
         return self.template.TemplateResponse('system_settings.html',{'request':request})
     def right_settings(self,request:Request):
         return self.template.TemplateResponse('right_settings.html',{'request':request})
-    def  userlogin(self,request:Request):
-        return self.template.TemplateResponse('login.html',{'request':request})
     async def file_upload(self, request: Request, file: UploadFile = File(...)):
         '''
         文件上传

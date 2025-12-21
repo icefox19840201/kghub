@@ -2,22 +2,18 @@ from starlette.templating import Jinja2Templates
 import os
 template_dir=os.path.join(os.path.dirname(__file__),"templates")
 template=Jinja2Templates(directory=str(template_dir))
-# 数据库配置
-DATABASE_CONFIG = {
-    'postgresql': {
-        'url': 'os.getenv("DB_URI", "postgresql://icefox:123456@localhost:5432/kghub?sslmode=disable")',
-        'echo': False
-    },
-    'mysql': {
-        'url': 'mysql+pymysql://username:password@localhost:3306/kghub',
-        'echo': False
+db={
+    'mysql':'mysql+pymysql://icefox1:123456@localhost:3306/text_to_sql'
+}
+llm={
+'qwen':{
+    'model':'qwen3-max',
+    'temperature':{
+        'text-to-sql':0
     }
 }
-
-
-llm={
-
 }
 embeddings={
-
+'bge':r'E:\bigmodel\huggingface_model\bge-base-zh-v1.5',
+'transformers':'D:\bigmodel\sentence-transformers'
 }

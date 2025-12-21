@@ -1,7 +1,9 @@
 from fastapi import APIRouter
 from apps.default import Default
+from apps.text2sql import TextToSql
 sys_router=APIRouter()
 pageinfo=Default()
+nlp2sql=TextToSql()
 sys_router.add_api_route(path='/index',methods=['get'],endpoint=pageinfo.default_page,description='首页')
 sys_router.add_api_route(path='/menu',methods=['get'],endpoint=pageinfo.left_page,description='菜单')
 sys_router.add_api_route(path='/pagecontent',methods=['get'],endpoint=pageinfo.right_page,description='内容查询')
@@ -16,4 +18,4 @@ sys_router.add_api_route(path='/data_backup',methods=['get'],endpoint=pageinfo.d
 sys_router.add_api_route(path='/system_settings',methods=['get'],endpoint=pageinfo.system_settings,description='系统设置')
 sys_router.add_api_route(path='/right_settings',methods=['get'],endpoint=pageinfo.right_settings,description='权限管理')
 sys_router.add_api_route(path='/doc_upload',methods=['post'],endpoint=pageinfo.file_upload,description='文件上传')
-sys_router.add_api_route(path='/login',methods=['get'],endpoint=pageinfo.userlogin,description='用户登录')
+sys_router.add_api_route(path='/text-to-sql',methods=['post'],endpoint=nlp2sql.query,description='text-to-sql查询')
