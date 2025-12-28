@@ -8,11 +8,11 @@ from langchain_core.prompts import PromptTemplate
 from typing_extensions import TypedDict
 import re
 import settings
-from core.biziness import llmbase
+from core.biziness.llmbase import getllm
 #------------------------------全局设置----------------------------------
 mysql_db_uri=settings.db['mysql']
 db=SQLDatabase.from_uri(mysql_db_uri)
-llm=llmbase.get_llm()
+llm=getllm()
 #------------------------------提取查询关键词中的返回数量------------------------------------
 def extract_top_k_from_query(query: str) -> int:
     """从用户查询中提取top_k值，默认为5"""

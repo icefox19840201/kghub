@@ -1,6 +1,6 @@
 import os,re
 from sqlalchemy import create_engine
-from settings import DATABASE_CONFIG
+from settings import db
 
 def get_postgresql_url():
     """获取PostgreSQL数据库连接URL"""
@@ -9,8 +9,7 @@ def get_postgresql_url():
         return db_url
 
     # 使用settings中的PostgreSQL配置
-    postgresql_config = DATABASE_CONFIG.get('postgresql', {})
-    url = postgresql_config.get('url')
+    url =  db.get('pg')
 
     # 如果url是os.getenv格式的，需要解析
     if url.startswith('os.getenv'):
